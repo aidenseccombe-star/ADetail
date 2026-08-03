@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { BookingForm } from "@/components/booking/booking-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { baseServices } from "@/lib/site-config";
+import { addOns, baseServices } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "Book Mobile Car Detailing in Costa Mesa & Orange County | A Detail",
@@ -19,10 +19,11 @@ export const metadata: Metadata = {
 export default async function BookPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tier?: string }>;
+  searchParams: Promise<{ tier?: string; addon?: string }>;
 }) {
-  const { tier } = await searchParams;
+  const { tier, addon } = await searchParams;
   const initialTier = baseServices.find((service) => service.id === tier)?.name;
+  const initialAddOn = addOns.find((item) => item.id === addon)?.name;
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-16 lg:px-8">
@@ -41,7 +42,7 @@ export default async function BookPage({
           <CardTitle className="text-lg font-bold text-ink">Booking details</CardTitle>
         </CardHeader>
         <CardContent>
-          <BookingForm initialTier={initialTier} />
+          <BookingForm initialTier={initialTier} initialAddOn={initialAddOn} />
         </CardContent>
       </Card>
     </div>

@@ -91,41 +91,190 @@ export const addOns = [
   },
 ] as const;
 
-export const serviceNavItems = [
+function getAddOn(id: (typeof addOns)[number]["id"]) {
+  const found = addOns.find((addOn) => addOn.id === id);
+  if (!found) {
+    throw new Error(`Add-on with id "${id}" is missing from site-config.`);
+  }
+  return found;
+}
+
+// Full content for the homepage service cards and each /services/[slug] detail page.
+export const servicesCatalog = [
   {
-    label: "Full Detail",
-    description: "Complete interior & exterior detail",
-    href: "/#services",
+    slug: "full-detail",
+    name: "Full Detail",
+    shortDescription:
+      "A complete interior and exterior detail, from hand wash to hand-applied wax.",
+    description:
+      "Every full detail starts with a hand wash and foam pre-soak, then moves through wheel and tire care, a deep interior clean, and a hand-applied wax for a lasting shine. Performed at your home or office — final pricing depends on vehicle size and condition.",
+    image: "/gallery/gallery-03-bmw-x3-exterior.jpg",
+    imageAlt: "Freshly detailed BMW X3 exterior, showroom shine",
+    frequency: "Every 4–6 weeks",
+    duration: "90–120 minutes",
+    includes: fullDetailIncludes,
+    pricing: baseServices.map((service) => ({
+      label: service.name,
+      price: service.price,
+      href: `/book?tier=${service.id}`,
+    })),
+    priceNote: undefined as string | undefined,
+    cta: "book" as const,
   },
   {
-    label: "Paint Correction",
-    description: "Machine polishing for swirls & scratches",
-    href: "/#paint-correction",
+    slug: getAddOn("paint-correction").id,
+    name: "Paint Correction",
+    shortDescription: getAddOn("paint-correction").description,
+    description:
+      "Machine polishing lifts swirl marks, light scratches, and oxidation out of your clear coat, restoring depth and clarity before your paint is sealed or coated.",
+    image: "/gallery/gallery-05-porsche-taycan-exterior.jpg",
+    imageAlt: "Porsche Taycan exterior with corrected, glossy paint",
+    frequency: "As needed, or before a ceramic coating",
+    duration: "2–4 hours",
+    includes: [
+      "Multi-stage machine polish",
+      "Swirl mark & light scratch removal",
+      "Paint inspection under LED lighting",
+      "Finishing polish for maximum gloss",
+    ],
+    pricing: [
+      {
+        label: "Paint Correction",
+        price: getAddOn("paint-correction").price,
+        href: "/book?addon=paint-correction",
+      },
+    ],
+    priceNote: "50% non-refundable deposit due at booking." as string | undefined,
+    cta: "book" as const,
   },
   {
-    label: "Ceramic Coating",
-    description: "Long-term protection, by consultation",
-    href: "/consultation",
+    slug: ceramicCoating.id,
+    name: "Ceramic Coating",
+    shortDescription: ceramicCoating.description,
+    description: `${ceramicCoating.description} ${ceramicCoating.note}`,
+    image: "/gallery/gallery-07-corvette-front.jpg",
+    imageAlt: "Corvette front end with a high-gloss, ceramic-coated finish",
+    frequency: "Lasts 2–5 years depending on the product",
+    duration: "By consultation",
+    includes: [
+      "Paint decontamination & prep",
+      "Machine paint correction, as needed",
+      "Professional-grade ceramic coating application",
+      "Hydrophobic, high-gloss finish",
+    ],
+    pricing: [
+      {
+        label: "Ceramic Coating",
+        price: ceramicCoating.startingPrice,
+        href: "/consultation",
+      },
+    ],
+    priceNote: ceramicCoating.note as string | undefined,
+    cta: "consultation" as const,
   },
   {
-    label: "Engine Bay Detail",
-    description: "Safe degreasing & detailing",
-    href: "/#engine-bay-detail",
+    slug: getAddOn("headlight-restoration").id,
+    name: "Headlight Restoration",
+    shortDescription: getAddOn("headlight-restoration").description,
+    description:
+      "Foggy, yellowed headlights don't just look dated — they cut down how far your headlights actually throw light at night. We wet-sand away the oxidation and seal the lens for lasting clarity.",
+    image: "/gallery/gallery-01-bmw-x5m-exterior.jpg",
+    imageAlt: "BMW X5 M front fascia with clear, restored headlights",
+    frequency: "Every 1–2 years",
+    duration: "30–45 minutes",
+    includes: [
+      "Wet-sand oxidation removal",
+      "Multi-stage polishing",
+      "UV-protective sealant application",
+      "Restored clarity & brightness",
+    ],
+    pricing: [
+      {
+        label: "Headlight Restoration",
+        price: getAddOn("headlight-restoration").price,
+        href: "/book?addon=headlight-restoration",
+      },
+    ],
+    priceNote: undefined as string | undefined,
+    cta: "book" as const,
   },
   {
-    label: "Headlight Restoration",
-    description: "Clearer, brighter headlights",
-    href: "/#headlight-restoration",
+    slug: getAddOn("engine-bay-detail").id,
+    name: "Engine Bay Detail",
+    shortDescription: getAddOn("engine-bay-detail").description,
+    description:
+      "A clean engine bay makes it easier to spot leaks and wear early, and it's simply satisfying to pop the hood on a car that's cared for from top to bottom. We degrease and dress every surface by hand.",
+    image: "/gallery/gallery-04-mercedes-amg-wheel.jpg",
+    imageAlt: "Close-up detail work on a Mercedes-AMG",
+    frequency: "Every 3–6 months",
+    duration: "20–30 minutes",
+    includes: [
+      "Safe degreasing of engine components",
+      "Plastic & rubber conditioning",
+      "Careful hand detailing around electronics",
+      "Engine bay dressed for a clean finish",
+    ],
+    pricing: [
+      {
+        label: "Engine Bay Detail",
+        price: getAddOn("engine-bay-detail").price,
+        href: "/book?addon=engine-bay-detail",
+      },
+    ],
+    priceNote: undefined as string | undefined,
+    cta: "book" as const,
   },
   {
-    label: "Pet Hair Removal",
-    description: "Deep extraction from carpet & upholstery",
-    href: "/#pet-hair-removal",
+    slug: getAddOn("pet-hair-removal").id,
+    name: "Pet Hair Removal",
+    shortDescription: getAddOn("pet-hair-removal").description,
+    description:
+      "Embedded pet hair doesn't come out with a standard vacuum. We use rubber-tipped tools and a deep extraction process to lift hair out of carpet and upholstery fibers.",
+    image: "/gallery/gallery-06-rangerover-interior.jpg",
+    imageAlt: "Range Rover interior with clean carpet and upholstery",
+    frequency: "As needed",
+    duration: "30–45 minutes",
+    includes: [
+      "Deep extraction from carpet & upholstery",
+      "Rubber-tipped tools to lift embedded hair",
+      "Full interior vacuum",
+      "Fabric-safe treatment",
+    ],
+    pricing: [
+      {
+        label: "Pet Hair Removal",
+        price: getAddOn("pet-hair-removal").price,
+        href: "/book?addon=pet-hair-removal",
+      },
+    ],
+    priceNote: undefined as string | undefined,
+    cta: "book" as const,
   },
   {
-    label: "Odor Elimination",
-    description: "Ozone treatment for smoke & pet odors",
-    href: "/#odor-elimination",
+    slug: getAddOn("odor-elimination").id,
+    name: "Odor Elimination",
+    shortDescription: getAddOn("odor-elimination").description,
+    description:
+      "Smoke, pet, and mildew odors live deep in fabric and vents where a standard clean can't reach. Ozone treatment neutralizes odor at the source instead of masking it.",
+    image: "/gallery/gallery-02-porsche-911gts-interior.jpg",
+    imageAlt: "Porsche 911 GTS interior, clean and fresh",
+    frequency: "As needed",
+    duration: "30–45 minutes",
+    includes: [
+      "Ozone treatment for smoke, pet & mildew odors",
+      "Interior deep clean",
+      "Air vent & cabin filter freshening",
+      "Fabric & surface deodorizing",
+    ],
+    pricing: [
+      {
+        label: "Odor Elimination",
+        price: getAddOn("odor-elimination").price,
+        href: "/book?addon=odor-elimination",
+      },
+    ],
+    priceNote: undefined as string | undefined,
+    cta: "book" as const,
   },
 ] as const;
 

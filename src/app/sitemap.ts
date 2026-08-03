@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 
+import { servicesCatalog } from "@/lib/site-config";
+
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -10,6 +12,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/fleet", priority: 0.7, changeFrequency: "monthly" },
     { path: "/sign-in", priority: 0.3, changeFrequency: "monthly" },
     { path: "/sign-up", priority: 0.3, changeFrequency: "monthly" },
+    ...servicesCatalog.map((service) => ({
+      path: `/services/${service.slug}`,
+      priority: 0.6,
+      changeFrequency: "monthly" as const,
+    })),
   ];
 
   return routes.map((route) => ({

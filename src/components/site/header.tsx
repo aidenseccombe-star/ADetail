@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import { signOut } from "@/lib/actions/auth";
 import { isAdmin } from "@/lib/admin";
-import { serviceNavItems } from "@/lib/site-config";
+import { servicesCatalog } from "@/lib/site-config";
 import { createClient } from "@/lib/supabase/server";
 
 const navLinks = [
@@ -54,14 +54,14 @@ export async function SiteHeader() {
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[280px] gap-1 p-2 sm:w-[380px] sm:grid-cols-2">
-                    {serviceNavItems.map((item) => (
-                      <li key={item.label}>
+                    {servicesCatalog.map((service) => (
+                      <li key={service.slug}>
                         <NavigationMenuLink
-                          render={<Link href={item.href} />}
+                          render={<Link href={`/services/${service.slug}`} />}
                           className="flex-col items-start gap-0.5"
                         >
-                          <p className="text-sm font-medium text-ink">{item.label}</p>
-                          <p className="text-xs text-ink/60">{item.description}</p>
+                          <p className="text-sm font-medium text-ink">{service.name}</p>
+                          <p className="text-xs text-ink/60">{service.shortDescription}</p>
                         </NavigationMenuLink>
                       </li>
                     ))}
@@ -145,17 +145,17 @@ export async function SiteHeader() {
                 <p className="px-2 text-xs font-semibold tracking-wide text-ink/40 uppercase">
                   Services
                 </p>
-                {serviceNavItems.map((item) => (
+                {servicesCatalog.map((service) => (
                   <SheetClose
-                    key={item.label}
+                    key={service.slug}
                     render={
                       <Link
-                        href={item.href}
+                        href={`/services/${service.slug}`}
                         className="rounded-lg px-2 py-2 text-sm font-medium text-ink/80 hover:bg-secondary"
                       />
                     }
                   >
-                    {item.label}
+                    {service.name}
                   </SheetClose>
                 ))}
 

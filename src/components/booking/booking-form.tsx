@@ -20,12 +20,18 @@ import { addOns, baseServices, timeWindows } from "@/lib/site-config";
 
 const PAINT_CORRECTION = "Paint Correction";
 
-export function BookingForm({ initialTier }: { initialTier?: string }) {
+export function BookingForm({
+  initialTier,
+  initialAddOn,
+}: {
+  initialTier?: string;
+  initialAddOn?: string;
+}) {
   const [state, action, pending] = useActionState(createBookingRequest, undefined);
   const values = state?.values;
 
   const [depositRequired, setDepositRequired] = useState(
-    () => values?.addOns.includes(PAINT_CORRECTION) ?? false
+    () => values?.addOns.includes(PAINT_CORRECTION) ?? initialAddOn === PAINT_CORRECTION
   );
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [confirmingPayment, setConfirmingPayment] = useState(false);
@@ -96,7 +102,9 @@ export function BookingForm({ initialTier }: { initialTier?: string }) {
                 id={`addon-${addOn.name}`}
                 name="addOns"
                 value={addOn.name}
-                defaultChecked={values?.addOns.includes(addOn.name)}
+                defaultChecked={
+                  values ? values.addOns.includes(addOn.name) : addOn.name === initialAddOn
+                }
                 onCheckedChange={
                   addOn.name === PAINT_CORRECTION ? setDepositRequired : undefined
                 }
