@@ -108,10 +108,10 @@ export function SiteFooter() {
           </p>
           <div className="flex gap-6">
             <Link href="/privacy" className="hover:text-ink">
-              Privacy
+              Privacy Policy
             </Link>
             <Link href="/terms" className="hover:text-ink">
-              Terms
+              Terms &amp; Conditions
             </Link>
           </div>
         </div>

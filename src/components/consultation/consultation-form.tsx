@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -98,6 +99,37 @@ export function ConsultationForm() {
           placeholder="Tell us about your vehicle's condition, any existing coating, or anything else we should know"
           defaultValue={values?.notes}
         />
+      </div>
+
+      <div className="flex items-start gap-2.5">
+        <Checkbox
+          id="agreedToTerms"
+          name="agreedToTerms"
+          value="true"
+          defaultChecked={values?.agreedToTerms}
+          required
+          className="mt-0.5"
+        />
+        <Label htmlFor="agreedToTerms" className="font-normal text-ink/70">
+          I agree to the{" "}
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand hover:underline"
+          >
+            Terms &amp; Conditions
+          </a>{" "}
+          and{" "}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand hover:underline"
+          >
+            Privacy Policy
+          </a>
+        </Label>
       </div>
 
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}

@@ -49,6 +49,7 @@ export function BookingForm({
   const [preferredTime, setPreferredTime] = useState<string | null>(
     values?.preferredTime ?? null
   );
+  const [agreedToTerms, setAgreedToTerms] = useState(values?.agreedToTerms ?? false);
 
   const depositRequired = selectedAddOns.includes(PAINT_CORRECTION);
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -101,7 +102,11 @@ export function BookingForm({
 
   const isSubmitting = pending || confirmingPayment;
   const canSubmit = Boolean(
-    selectedTierName && selectedVehicleType && preferredDate && preferredTime
+    selectedTierName &&
+      selectedVehicleType &&
+      preferredDate &&
+      preferredTime &&
+      agreedToTerms
   );
 
   return (
@@ -282,6 +287,38 @@ export function BookingForm({
           placeholder="Gate codes, parking instructions, areas of concern…"
           defaultValue={values?.notes ?? initialNotes}
         />
+      </div>
+
+      <div className="flex items-start gap-2.5">
+        <Checkbox
+          id="agreedToTerms"
+          name="agreedToTerms"
+          value="true"
+          checked={agreedToTerms}
+          onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+          required
+          className="mt-0.5"
+        />
+        <Label htmlFor="agreedToTerms" className="font-normal text-ink/70">
+          I agree to the{" "}
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand hover:underline"
+          >
+            Terms &amp; Conditions
+          </a>{" "}
+          and{" "}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand hover:underline"
+          >
+            Privacy Policy
+          </a>
+        </Label>
       </div>
 
       {paymentError && <p className="text-sm text-destructive">{paymentError}</p>}

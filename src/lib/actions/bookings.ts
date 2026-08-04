@@ -29,6 +29,7 @@ export type BookingFormValues = {
   preferredDate: string;
   preferredTime: string;
   notes: string;
+  agreedToTerms: boolean;
   paymentIntentId?: string;
 };
 
@@ -55,6 +56,7 @@ export async function createBookingRequest(
     preferredTime: String(formData.get("preferredTime") ?? "").trim(),
     notes: String(formData.get("notes") ?? "").trim(),
     addOns: formData.getAll("addOns").map(String),
+    agreedToTerms: formData.get("agreedToTerms") === "true",
   };
 
   const isMaintenanceWash =
@@ -70,6 +72,7 @@ export async function createBookingRequest(
     !values.vehicleType ||
     !values.preferredDate ||
     !values.preferredTime ||
+    !values.agreedToTerms ||
     (isMaintenanceWash && !values.lastDetailedNote)
   ) {
     return { error: "Please fill in all required fields.", values };
@@ -169,6 +172,8 @@ export async function createBookingRequest(
     notes: values.notes || null,
     stripe_payment_intent_id: values.paymentIntentId ?? null,
     deposit_amount_cents: depositAmountCents,
+    agreed_to_terms: values.agreedToTerms,
+    agreed_to_terms_at: new Date().toISOString(),
   });
 
   if (error) {

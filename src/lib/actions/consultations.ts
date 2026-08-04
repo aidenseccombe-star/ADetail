@@ -12,6 +12,7 @@ export type ConsultationFormValues = {
   vehicle: string;
   interestedIn: string;
   notes: string;
+  agreedToTerms: boolean;
 };
 
 export type ConsultationActionState =
@@ -29,6 +30,7 @@ export async function createConsultationRequest(
     vehicle: String(formData.get("vehicle") ?? "").trim(),
     interestedIn: String(formData.get("interestedIn") ?? "").trim(),
     notes: String(formData.get("notes") ?? "").trim(),
+    agreedToTerms: formData.get("agreedToTerms") === "true",
   };
 
   if (
@@ -36,7 +38,8 @@ export async function createConsultationRequest(
     !values.email ||
     !values.phone ||
     !values.vehicle ||
-    !values.interestedIn
+    !values.interestedIn ||
+    !values.agreedToTerms
   ) {
     return { error: "Please fill in all required fields.", values };
   }
@@ -54,6 +57,8 @@ export async function createConsultationRequest(
     vehicle: values.vehicle,
     interested_in: values.interestedIn,
     notes: values.notes || null,
+    agreed_to_terms: values.agreedToTerms,
+    agreed_to_terms_at: new Date().toISOString(),
   });
 
   if (error) {

@@ -23,6 +23,8 @@ export type AdminBooking = {
   preferred_time: string;
   notes: string | null;
   deposit_amount_cents: number | null;
+  agreed_to_terms: boolean | null;
+  agreed_to_terms_at: string | null;
 };
 
 const statusVariant = {
@@ -79,6 +81,11 @@ export function AdminBookingRow({ booking }: { booking: AdminBooking }) {
               Deposit paid: ${(booking.deposit_amount_cents / 100).toFixed(2)}
             </p>
           )}
+          <p className="mt-1 text-sm text-ink/60">
+            Agreed to terms: {booking.agreed_to_terms ? "Yes" : "No"}
+            {booking.agreed_to_terms_at &&
+              ` (${new Date(booking.agreed_to_terms_at).toLocaleString()})`}
+          </p>
         </div>
         <Badge variant={statusVariant[booking.status]} className="shrink-0 capitalize">
           {booking.status}

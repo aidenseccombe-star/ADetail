@@ -16,6 +16,8 @@ export type AdminConsultation = {
   vehicle: string;
   interested_in: string | null;
   notes: string | null;
+  agreed_to_terms: boolean | null;
+  agreed_to_terms_at: string | null;
 };
 
 const statusVariant = {
@@ -57,6 +59,11 @@ export function AdminConsultationRow({ consultation }: { consultation: AdminCons
           {consultation.notes && (
             <p className="mt-1 text-sm text-ink/60">Notes: {consultation.notes}</p>
           )}
+          <p className="mt-1 text-sm text-ink/60">
+            Agreed to terms: {consultation.agreed_to_terms ? "Yes" : "No"}
+            {consultation.agreed_to_terms_at &&
+              ` (${new Date(consultation.agreed_to_terms_at).toLocaleString()})`}
+          </p>
         </div>
         <Badge variant={statusVariant[consultation.status]} className="shrink-0 capitalize">
           {consultation.status}
