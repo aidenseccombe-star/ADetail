@@ -24,7 +24,7 @@ export function PackageCard({ pkg }: { pkg: TierPackage }) {
   return (
     <Card
       className={cn(
-        "relative flex flex-col shadow-none",
+        "relative flex flex-col overflow-visible shadow-none",
         isFeatured ? "border-brand shadow-lg shadow-brand/10 lg:scale-105" : "border-ink/10"
       )}
     >
