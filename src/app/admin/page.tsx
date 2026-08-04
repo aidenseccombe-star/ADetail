@@ -38,13 +38,15 @@ export default async function AdminPage() {
       supabase
         .from("booking_requests")
         .select(
-          "id, created_at, status, full_name, email, phone, address, vehicle, service_tier, add_ons, preferred_date, preferred_time, notes, deposit_amount_cents"
+          "id, created_at, status, full_name, email, phone, address, vehicle, service_tier, vehicle_type, last_detailed_note, add_ons, preferred_date, preferred_time, notes, deposit_amount_cents"
         )
         .order("created_at", { ascending: false })
         .returns<AdminBooking[]>(),
       supabase
         .from("consultation_requests")
-        .select("id, created_at, status, full_name, email, phone, vehicle, notes")
+        .select(
+          "id, created_at, status, full_name, email, phone, vehicle, interested_in, notes"
+        )
         .order("created_at", { ascending: false })
         .returns<AdminConsultation[]>(),
       supabase

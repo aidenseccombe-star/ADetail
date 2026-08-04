@@ -111,27 +111,33 @@ export default async function ServiceDetailPage({
             </ul>
           </div>
 
-          <div className="mt-10 space-y-3">
-            {service.pricing.map((tier) => (
-              <div
-                key={tier.label}
-                className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-ink/10 p-4"
-              >
-                <div>
-                  <p className="text-sm font-semibold text-ink">{tier.label}</p>
-                  <p className="text-2xl font-black text-ink">{tier.price}</p>
+          {service.cta === "consultation" ? (
+            service.priceNote && (
+              <p className="mt-10 text-sm text-ink/60">{service.priceNote}</p>
+            )
+          ) : (
+            <div className="mt-10 space-y-3">
+              {service.pricing.map((tier) => (
+                <div
+                  key={tier.label}
+                  className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-ink/10 p-4"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{tier.label}</p>
+                    <p className="text-2xl font-black text-ink">{tier.price}</p>
+                  </div>
+                  {isMultiTier && (
+                    <Button variant="brand" size="lg" render={<Link href={tier.href} />}>
+                      Book This Package
+                    </Button>
+                  )}
                 </div>
-                {isMultiTier && (
-                  <Button variant="brand" size="lg" render={<Link href={tier.href} />}>
-                    Book This Package
-                  </Button>
-                )}
-              </div>
-            ))}
-            {service.priceNote && (
-              <p className="text-xs text-ink/50">{service.priceNote}</p>
-            )}
-          </div>
+              ))}
+              {service.priceNote && (
+                <p className="text-xs text-ink/50">{service.priceNote}</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

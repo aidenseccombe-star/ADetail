@@ -1,7 +1,8 @@
 "use client";
 
-import { startTransition, useActionState, useRef, useState } from "react";
+import { startTransition, useActionState, useMemo, useRef, useState } from "react";
 
+import { AppointmentCalendar } from "@/components/booking/appointment-calendar";
 import { DepositPayment, type DepositPaymentHandle } from "@/components/booking/deposit-payment";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,23 +17,40 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createBookingRequest } from "@/lib/actions/bookings";
-import { addOns, baseServices, timeWindows } from "@/lib/site-config";
+import { getTotalDurationMinutes } from "@/lib/booking-availability";
+import { addOns, packages, vehicleTypes } from "@/lib/site-config";
 
 const PAINT_CORRECTION = "Paint Correction";
 
 export function BookingForm({
   initialTier,
   initialAddOn,
+  initialNotes,
 }: {
   initialTier?: string;
   initialAddOn?: string;
+  initialNotes?: string;
 }) {
   const [state, action, pending] = useActionState(createBookingRequest, undefined);
   const values = state?.values;
 
-  const [depositRequired, setDepositRequired] = useState(
-    () => values?.addOns.includes(PAINT_CORRECTION) ?? initialAddOn === PAINT_CORRECTION
+  const [selectedTierName, setSelectedTierName] = useState<string | undefined>(
+    values?.serviceTier ?? initialTier
   );
+  const [selectedVehicleType, setSelectedVehicleType] = useState<string | undefined>(
+    values?.vehicleType
+  );
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>(
+    () => values?.addOns ?? (initialAddOn ? [initialAddOn] : [])
+  );
+  const [preferredDate, setPreferredDate] = useState<string | null>(
+    values?.preferredDate ?? null
+  );
+  const [preferredTime, setPreferredTime] = useState<string | null>(
+    values?.preferredTime ?? null
+  );
+
+  const depositRequired = selectedAddOns.includes(PAINT_CORRECTION);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [confirmingPayment, setConfirmingPayment] = useState(false);
   const depositRef = useRef<DepositPaymentHandle>(null);
@@ -41,6 +59,18 @@ export function BookingForm({
   // but a later step (the booking insert) failed, reuse that same
   // payment intent on retry instead of charging the card again.
   const alreadyPaidIntentId = values?.paymentIntentId;
+
+  const selectedPackage = packages.find((pkg) => pkg.name === selectedTierName);
+  const isMaintenanceWash = selectedPackage?.id === "maintenance-wash";
+
+  const durationMinutes = useMemo(
+    () => getTotalDurationMinutes(selectedTierName, selectedVehicleType, selectedAddOns),
+    [selectedTierName, selectedVehicleType, selectedAddOns]
+  );
+
+  function toggleAddOn(name: string, checked: boolean) {
+    setSelectedAddOns((prev) => (checked ? [...prev, name] : prev.filter((n) => n !== name)));
+  }
 
   async function handleSubmit(formData: FormData) {
     setPaymentError(null);
@@ -70,6 +100,9 @@ export function BookingForm({
   }
 
   const isSubmitting = pending || confirmingPayment;
+  const canSubmit = Boolean(
+    selectedTierName && selectedVehicleType && preferredDate && preferredTime
+  );
 
   return (
     <form action={handleSubmit} className="space-y-8">
@@ -77,21 +110,56 @@ export function BookingForm({
         <Label htmlFor="serviceTier">Service</Label>
         <Select
           name="serviceTier"
-          defaultValue={values?.serviceTier ?? initialTier}
+          value={selectedTierName ?? ""}
+          onValueChange={(value) => setSelectedTierName(value as string)}
           required
         >
           <SelectTrigger id="serviceTier" className="w-full">
-            <SelectValue placeholder="Choose your vehicle size" />
+            <SelectValue placeholder="Choose a package" />
           </SelectTrigger>
           <SelectContent>
-            {baseServices.map((service) => (
-              <SelectItem key={service.id} value={service.name}>
-                {service.name} — {service.price}
+            {packages.map((pkg) => (
+              <SelectItem key={pkg.id} value={pkg.name}>
+                {pkg.name} — {pkg.price}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="vehicleType">Vehicle type</Label>
+        <Select
+          name="vehicleType"
+          value={selectedVehicleType ?? ""}
+          onValueChange={(value) => setSelectedVehicleType(value as string)}
+          required
+        >
+          <SelectTrigger id="vehicleType" className="w-full">
+            <SelectValue placeholder="Choose your vehicle type" />
+          </SelectTrigger>
+          <SelectContent>
+            {vehicleTypes.map((type) => (
+              <SelectItem key={type.id} value={type.label}>
+                {type.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {isMaintenanceWash && (
+        <div className="space-y-1.5">
+          <Label htmlFor="lastDetailedNote">When did we last detail this vehicle?</Label>
+          <Input
+            id="lastDetailedNote"
+            name="lastDetailedNote"
+            placeholder="e.g. Full Detail on July 12th"
+            defaultValue={values?.lastDetailedNote}
+            required
+          />
+        </div>
+      )}
 
       <div className="space-y-2">
         <span className="text-sm font-medium text-ink">Add-ons (optional)</span>
@@ -102,12 +170,8 @@ export function BookingForm({
                 id={`addon-${addOn.name}`}
                 name="addOns"
                 value={addOn.name}
-                defaultChecked={
-                  values ? values.addOns.includes(addOn.name) : addOn.name === initialAddOn
-                }
-                onCheckedChange={
-                  addOn.name === PAINT_CORRECTION ? setDepositRequired : undefined
-                }
+                checked={selectedAddOns.includes(addOn.name)}
+                onCheckedChange={(checked) => toggleAddOn(addOn.name, checked === true)}
               />
               <Label htmlFor={`addon-${addOn.name}`} className="font-normal text-ink/80">
                 {addOn.name}
@@ -187,32 +251,27 @@ export function BookingForm({
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="preferredDate">Preferred date</Label>
-          <Input
-            id="preferredDate"
-            name="preferredDate"
-            type="date"
-            defaultValue={values?.preferredDate}
-            required
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="preferredTime">Preferred time</Label>
-          <Select name="preferredTime" defaultValue={values?.preferredTime} required>
-            <SelectTrigger id="preferredTime" className="w-full">
-              <SelectValue placeholder="Choose a time window" />
-            </SelectTrigger>
-            <SelectContent>
-              {timeWindows.map((window) => (
-                <SelectItem key={window} value={window}>
-                  {window}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="space-y-1.5">
+        <Label>Preferred date &amp; time</Label>
+        {selectedTierName && selectedVehicleType ? (
+          <div className="rounded-lg border border-ink/10 p-4">
+            <AppointmentCalendar
+              durationMinutes={durationMinutes}
+              initialDate={preferredDate ?? undefined}
+              initialTime={preferredTime ?? undefined}
+              onChange={(date, time) => {
+                setPreferredDate(date);
+                setPreferredTime(time);
+              }}
+            />
+          </div>
+        ) : (
+          <p className="rounded-lg border border-dashed border-ink/15 p-4 text-sm text-ink/50">
+            Choose a service and vehicle type above to see available times.
+          </p>
+        )}
+        <input type="hidden" name="preferredDate" value={preferredDate ?? ""} />
+        <input type="hidden" name="preferredTime" value={preferredTime ?? ""} />
       </div>
 
       <div className="space-y-1.5">
@@ -221,7 +280,7 @@ export function BookingForm({
           id="notes"
           name="notes"
           placeholder="Gate codes, parking instructions, areas of concern…"
-          defaultValue={values?.notes}
+          defaultValue={values?.notes ?? initialNotes}
         />
       </div>
 
@@ -233,7 +292,7 @@ export function BookingForm({
         variant="brand"
         size="lg"
         className="w-full"
-        disabled={isSubmitting}
+        disabled={isSubmitting || !canSubmit}
       >
         {confirmingPayment
           ? "Processing payment…"

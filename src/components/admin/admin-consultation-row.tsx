@@ -14,6 +14,7 @@ export type AdminConsultation = {
   email: string;
   phone: string;
   vehicle: string;
+  interested_in: string | null;
   notes: string | null;
 };
 
@@ -48,6 +49,11 @@ export function AdminConsultationRow({ consultation }: { consultation: AdminCons
           <p className="mt-1 text-sm text-ink/60">
             {consultation.email} · {consultation.phone}
           </p>
+          {consultation.interested_in && (
+            <p className="mt-1 text-sm text-ink/60">
+              Interested in: {consultation.interested_in}
+            </p>
+          )}
           {consultation.notes && (
             <p className="mt-1 text-sm text-ink/60">Notes: {consultation.notes}</p>
           )}

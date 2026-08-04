@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Clock, CreditCard, Mail, MapPin, Phone } from "lucide-react";
 
 import { Logo } from "@/components/site/logo";
 import { FacebookIcon, InstagramIcon } from "@/components/site/social-icons";
@@ -66,26 +66,43 @@ export function SiteFooter() {
                   {siteConfig.email}
                 </a>
               </li>
-              <li className="flex items-center gap-2">
-                <MapPin className="size-4 text-brand" aria-hidden />
-                <span>
-                  {siteConfig.city}, {siteConfig.state} &middot; Serving{" "}
-                  {siteConfig.serviceArea}
-                </span>
-              </li>
-              <li className="border-t border-ink/10 pt-2.5">
-                {siteConfig.hours.map((h) => (
-                  <div key={h.days} className="flex justify-between gap-4">
-                    <span>{h.days}</span>
-                    <span>{h.time}</span>
-                  </div>
-                ))}
-              </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-ink/10 pt-8 text-xs text-ink/50 sm:flex-row">
+        <div className="mt-14 grid gap-4 border-t border-ink/10 pt-14 sm:grid-cols-3">
+          <div className="flex items-start gap-3 rounded-xl border border-ink/10 p-5">
+            <MapPin className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden />
+            <div>
+              <p className="text-sm font-semibold text-ink">Service Area</p>
+              <p className="mt-1 text-sm text-ink/60">
+                {siteConfig.city} &amp; {siteConfig.serviceArea}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-xl border border-ink/10 p-5">
+            <CreditCard className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden />
+            <div>
+              <p className="text-sm font-semibold text-ink">Payments Accepted</p>
+              <p className="mt-1 text-sm text-ink/60">
+                {siteConfig.paymentsAccepted.join(", ")}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-xl border border-ink/10 p-5">
+            <Clock className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden />
+            <div>
+              <p className="text-sm font-semibold text-ink">Hours</p>
+              {siteConfig.hours.map((h) => (
+                <p key={h.days} className="mt-1 text-sm text-ink/60">
+                  {h.days}: {h.time}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-ink/10 pt-8 text-xs text-ink/50 sm:flex-row">
           <p>
             &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
           </p>

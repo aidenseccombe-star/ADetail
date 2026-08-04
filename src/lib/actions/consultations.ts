@@ -10,6 +10,7 @@ export type ConsultationFormValues = {
   email: string;
   phone: string;
   vehicle: string;
+  interestedIn: string;
   notes: string;
 };
 
@@ -26,10 +27,17 @@ export async function createConsultationRequest(
     email: String(formData.get("email") ?? "").trim(),
     phone: String(formData.get("phone") ?? "").trim(),
     vehicle: String(formData.get("vehicle") ?? "").trim(),
+    interestedIn: String(formData.get("interestedIn") ?? "").trim(),
     notes: String(formData.get("notes") ?? "").trim(),
   };
 
-  if (!values.fullName || !values.email || !values.phone || !values.vehicle) {
+  if (
+    !values.fullName ||
+    !values.email ||
+    !values.phone ||
+    !values.vehicle ||
+    !values.interestedIn
+  ) {
     return { error: "Please fill in all required fields.", values };
   }
 
@@ -44,6 +52,7 @@ export async function createConsultationRequest(
     email: values.email,
     phone: values.phone,
     vehicle: values.vehicle,
+    interested_in: values.interestedIn,
     notes: values.notes || null,
   });
 

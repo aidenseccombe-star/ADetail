@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
 import { Hero } from "@/components/site/hero";
-import { Services } from "@/components/site/services";
+import { Packages } from "@/components/site/packages";
+import { AddOns } from "@/components/site/add-ons";
+import { PaintCorrectionCeramicCoating } from "@/components/site/paint-correction-ceramic-coating";
 import { Gallery } from "@/components/site/gallery";
 import { Testimonials } from "@/components/site/testimonials";
 import { CtaBanner } from "@/components/site/cta-banner";
@@ -24,7 +26,9 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <Services />
+      <Packages />
+      <AddOns />
+      <PaintCorrectionCeramicCoating />
       <Gallery />
       <Testimonials />
       <CtaBanner />

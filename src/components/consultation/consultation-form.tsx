@@ -5,8 +5,21 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createConsultationRequest } from "@/lib/actions/consultations";
+
+const interestOptions = [
+  "Paint Correction",
+  "Ceramic Coating",
+  "Not sure — help me decide",
+] as const;
 
 export function ConsultationForm() {
   const [state, action, pending] = useActionState(createConsultationRequest, undefined);
@@ -59,6 +72,22 @@ export function ConsultationForm() {
           defaultValue={values?.vehicle}
           required
         />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="interestedIn">What are you interested in?</Label>
+        <Select name="interestedIn" defaultValue={values?.interestedIn} required>
+          <SelectTrigger id="interestedIn" className="w-full">
+            <SelectValue placeholder="Choose an option" />
+          </SelectTrigger>
+          <SelectContent>
+            {interestOptions.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-1.5">

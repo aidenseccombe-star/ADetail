@@ -2,8 +2,17 @@
 
 import { redirect } from "next/navigation";
 
+import {
+  type BusyBooking,
+  getOccupiedRanges,
+  getTotalDurationMinutes,
+  isWithinBusinessHours,
+  parseLocalDate,
+  parseTimeToMinutes,
+  rangeConflicts,
+} from "@/lib/booking-availability";
 import { sendBookingNotification } from "@/lib/email/resend";
-import { paintCorrectionDepositCents } from "@/lib/site-config";
+import { packages, paintCorrectionDepositCents } from "@/lib/site-config";
 import { createClient } from "@/lib/supabase/server";
 import { getStripeClient } from "@/lib/stripe/server";
 
@@ -14,6 +23,8 @@ export type BookingFormValues = {
   address: string;
   vehicle: string;
   serviceTier: string;
+  vehicleType: string;
+  lastDetailedNote: string;
   addOns: string[];
   preferredDate: string;
   preferredTime: string;
@@ -38,11 +49,16 @@ export async function createBookingRequest(
     address: String(formData.get("address") ?? "").trim(),
     vehicle: String(formData.get("vehicle") ?? "").trim(),
     serviceTier: String(formData.get("serviceTier") ?? "").trim(),
+    vehicleType: String(formData.get("vehicleType") ?? "").trim(),
+    lastDetailedNote: String(formData.get("lastDetailedNote") ?? "").trim(),
     preferredDate: String(formData.get("preferredDate") ?? "").trim(),
     preferredTime: String(formData.get("preferredTime") ?? "").trim(),
     notes: String(formData.get("notes") ?? "").trim(),
     addOns: formData.getAll("addOns").map(String),
   };
+
+  const isMaintenanceWash =
+    packages.find((pkg) => pkg.name === values.serviceTier)?.id === "maintenance-wash";
 
   if (
     !values.fullName ||
@@ -51,10 +67,60 @@ export async function createBookingRequest(
     !values.address ||
     !values.vehicle ||
     !values.serviceTier ||
+    !values.vehicleType ||
     !values.preferredDate ||
-    !values.preferredTime
+    !values.preferredTime ||
+    (isMaintenanceWash && !values.lastDetailedNote)
   ) {
     return { error: "Please fill in all required fields.", values };
+  }
+
+  // Re-validate the calendar invariant server-side — the calendar UI only
+  // ever offers valid slots, but nothing stops a request from bypassing it,
+  // so this can't be a client-only guarantee.
+  const timeMinutes = parseTimeToMinutes(values.preferredTime);
+  const appointmentDate = /^\d{4}-\d{2}-\d{2}$/.test(values.preferredDate)
+    ? parseLocalDate(values.preferredDate)
+    : null;
+  const durationMinutes = getTotalDurationMinutes(
+    values.serviceTier,
+    values.vehicleType,
+    values.addOns
+  );
+
+  if (
+    timeMinutes === null ||
+    !appointmentDate ||
+    Number.isNaN(appointmentDate.getTime()) ||
+    durationMinutes <= 0 ||
+    !isWithinBusinessHours(appointmentDate, timeMinutes, durationMinutes)
+  ) {
+    return {
+      error: "That date or time isn't available. Please pick another slot.",
+      values,
+    };
+  }
+
+  const availabilityClient = await createClient();
+  const { data: busyRows, error: availabilityError } = await availabilityClient.rpc(
+    "get_busy_slots",
+    { p_start_date: values.preferredDate, p_end_date: values.preferredDate }
+  );
+
+  if (availabilityError) {
+    console.error("Failed to check availability", availabilityError);
+    return {
+      error: "Something went wrong checking availability. Please try again.",
+      values,
+    };
+  }
+
+  const occupiedRanges = getOccupiedRanges((busyRows ?? []) as BusyBooking[]);
+  if (rangeConflicts(timeMinutes, durationMinutes, occupiedRanges)) {
+    return {
+      error: "That time was just booked by someone else. Please pick another slot.",
+      values,
+    };
   }
 
   let depositAmountCents: number | null = null;
@@ -95,6 +161,8 @@ export async function createBookingRequest(
     address: values.address,
     vehicle: values.vehicle,
     service_tier: values.serviceTier,
+    vehicle_type: values.vehicleType,
+    last_detailed_note: values.lastDetailedNote || null,
     add_ons: values.addOns,
     preferred_date: values.preferredDate,
     preferred_time: values.preferredTime,

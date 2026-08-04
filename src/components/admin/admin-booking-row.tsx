@@ -16,6 +16,8 @@ export type AdminBooking = {
   address: string;
   vehicle: string;
   service_tier: string | null;
+  vehicle_type: string | null;
+  last_detailed_note: string | null;
   add_ons: string[];
   preferred_date: string;
   preferred_time: string;
@@ -53,7 +55,10 @@ export function AdminBookingRow({ booking }: { booking: AdminBooking }) {
             {booking.full_name} — {booking.vehicle}
           </p>
           {booking.service_tier && (
-            <p className="mt-1 text-sm text-ink/60">{booking.service_tier}</p>
+            <p className="mt-1 text-sm text-ink/60">
+              {booking.service_tier}
+              {booking.vehicle_type && ` · ${booking.vehicle_type}`}
+            </p>
           )}
           <p className="mt-1 text-sm text-ink/60">
             {booking.preferred_date} · {booking.preferred_time}
@@ -63,6 +68,11 @@ export function AdminBookingRow({ booking }: { booking: AdminBooking }) {
             {booking.email} · {booking.phone}
           </p>
           <p className="mt-1 text-sm text-ink/60">{booking.address}</p>
+          {booking.last_detailed_note && (
+            <p className="mt-1 text-sm text-ink/60">
+              Last detailed: {booking.last_detailed_note}
+            </p>
+          )}
           {booking.notes && <p className="mt-1 text-sm text-ink/60">Notes: {booking.notes}</p>}
           {booking.deposit_amount_cents !== null && (
             <p className="mt-1 text-sm text-brand">

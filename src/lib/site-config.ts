@@ -19,34 +19,135 @@ export const siteConfig = {
     instagram: "https://instagram.com/",
     facebook: "https://facebook.com/",
   },
+  // Placeholder — no confirmed source for this yet.
+  paymentsAccepted: ["Cash", "Card", "Apple Pay", "Google Pay"],
 } as const;
 
-const fullDetailIncludes = [
-  "Hand wash & foam pre-soak",
-  "Wheel & tire cleaning + dressing",
-  "Interior vacuum, wipe-down & dashboard conditioning",
-  "Window cleaning, in and out",
-  "Hand-applied wax for a deep shine",
+export const vehicleTypes = [
+  { id: "sedan-coupe", label: "Sedan / Coupe" },
+  { id: "suv-truck", label: "SUV / Truck" },
 ] as const;
 
-export const baseServices = [
+// Legacy compound service_tier values from before packages had a single
+// price and a separate vehicle-type field (each "Full Detail" tier used to
+// be priced per vehicle size). Old Supabase rows may still have these —
+// kept only so booking-availability.ts can still resolve a duration for
+// them; nothing in the UI writes these values anymore.
+export const legacyTierDurations = {
+  "Full Detail — Sedan/Coupe": 120,
+  "Full Detail — SUV/Truck": 150,
+} as const;
+
+export const packages = [
   {
-    id: "sedan-coupe",
-    name: "Full Detail — Sedan/Coupe",
-    price: "From $279",
+    id: "basic-detail",
+    name: "Basic Detail",
+    price: "Starting at $130",
+    // Placeholder — will be corrected later.
+    priceCents: 13000,
     description:
-      "A complete interior and exterior detail for sedans and coupes, performed at your home or office. Final price depends on vehicle condition.",
-    includes: fullDetailIncludes,
+      "A thorough inside-and-out clean that keeps your car looking sharp between full details.",
+    checklist: {
+      type: "split",
+      exterior: [
+        "Hand wash & foam pre-soak",
+        "Wheel & tire cleaning + dressing",
+        "Exterior window cleaning",
+      ],
+      interior: [
+        "Interior vacuum",
+        "Dashboard & console wipe-down",
+        "Interior window cleaning",
+      ],
+    },
+    durationMinutes: { "sedan-coupe": 75, "suv-truck": 90 },
   },
   {
-    id: "suv-truck",
-    name: "Full Detail — SUV/Truck",
-    price: "From $329",
+    id: "full-detail",
+    name: "Full Detail",
+    price: "Starting at $219",
+    // Placeholder — will be corrected later.
+    priceCents: 21900,
     description:
-      "A complete interior and exterior detail for SUVs and trucks, performed at your home or office. Final price depends on vehicle condition.",
-    includes: fullDetailIncludes,
+      "Our most-booked package. A complete restoration of your car's interior and exterior.",
+    badge: "Most Popular",
+    checklist: {
+      type: "plus",
+      plusFrom: "Basic Detail",
+      items: [
+        "Hand-applied wax for a deep shine",
+        "Dashboard & console conditioning",
+        "Door jamb cleaning",
+        "Deep vacuum including under seats",
+      ],
+    },
+    durationMinutes: { "sedan-coupe": 120, "suv-truck": 150 },
+  },
+  {
+    id: "signature-detail",
+    name: "Signature Detail",
+    price: "Starting at $379",
+    // Placeholder — will be corrected later.
+    priceCents: 37900,
+    description: "The full treatment. Every surface corrected, conditioned, and protected.",
+    checklist: {
+      type: "plus",
+      plusFrom: "Full Detail",
+      items: [
+        "Engine bay cleaning & dressing",
+        "Clay bar treatment",
+        "Iron decontamination",
+        "Leather conditioning / fabric protectant",
+        "Headlight restoration",
+        "Paint sealant for longer-lasting protection",
+      ],
+    },
+    durationMinutes: { "sedan-coupe": 240, "suv-truck": 300 },
+  },
+  {
+    id: "maintenance-wash",
+    name: "Maintenance Wash",
+    price: "Starting at $105",
+    // Placeholder — will be corrected later.
+    priceCents: 10500,
+    description: "Keeps a finish we've already restored looking new.",
+    eyebrow: "For vehicles we've already detailed",
+    gateNote: "Available to clients whose vehicles we've detailed before.",
+    checklist: {
+      type: "flat",
+      items: [
+        "Hand wash & foam pre-soak",
+        "Wheel & tire cleaning",
+        "Exterior window cleaning",
+        "Interior vacuum & touch-point wipe-down",
+      ],
+    },
+    hasFrequencyToggle: true,
+    durationMinutes: { "sedan-coupe": 45, "suv-truck": 60 },
   },
 ] as const;
+
+// Overloads so each call site gets the exact package's shape back (the four
+// packages don't all share the same checklist shape) instead of a union.
+export function getPackage(
+  id: "basic-detail"
+): Extract<(typeof packages)[number], { id: "basic-detail" }>;
+export function getPackage(
+  id: "full-detail"
+): Extract<(typeof packages)[number], { id: "full-detail" }>;
+export function getPackage(
+  id: "signature-detail"
+): Extract<(typeof packages)[number], { id: "signature-detail" }>;
+export function getPackage(
+  id: "maintenance-wash"
+): Extract<(typeof packages)[number], { id: "maintenance-wash" }>;
+export function getPackage(id: (typeof packages)[number]["id"]) {
+  const found = packages.find((pkg) => pkg.id === id);
+  if (!found) {
+    throw new Error(`Package with id "${id}" is missing from site-config.`);
+  }
+  return found;
+}
 
 export const ceramicCoating = {
   id: "ceramic-coating",
@@ -64,31 +165,62 @@ export const addOns = [
     description: "Machine polishing to remove swirl marks, light scratches, and oxidation.",
     priceCents: 34900,
     requiresDeposit: true,
+    // Excluded from calendar duration math on purpose — handled via its own
+    // deposit flow, not scheduled like the other add-ons.
+    durationMinutes: null,
   },
   {
     id: "engine-bay-detail",
     name: "Engine Bay Detail",
     price: "From $49",
     description: "Safe degreasing and detailing of the engine compartment.",
+    durationMinutes: 30,
   },
   {
     id: "headlight-restoration",
     name: "Headlight Restoration",
     price: "From $95",
     description: "Removes fog and yellowing for clearer, brighter headlights.",
+    durationMinutes: 60,
   },
   {
     id: "pet-hair-removal",
     name: "Pet Hair Removal",
     price: "From $39",
     description: "Deep extraction of embedded pet hair from carpet and upholstery.",
+    durationMinutes: 60,
   },
   {
     id: "odor-elimination",
     name: "Odor Elimination",
     price: "From $59",
     description: "Ozone treatment to neutralize smoke, pet, and mildew odors.",
+    durationMinutes: 60,
   },
+  {
+    id: "clay-bar-iron-decon",
+    name: "Clay Bar + Iron Decontamination",
+    // Placeholder — will be corrected later.
+    price: "From $79",
+    description:
+      "Removes embedded contaminants and iron particles the wash alone can't lift, leaving paint glass-smooth.",
+    durationMinutes: 30,
+  },
+  {
+    id: "exterior-plastic-restoration",
+    name: "Exterior Plastic Restoration",
+    // Placeholder — will be corrected later.
+    price: "From $65",
+    description: "Restores faded trim, bumpers, and plastic panels to a rich, like-new finish.",
+    durationMinutes: 45,
+  },
+] as const;
+
+export const frequencyOptions = [
+  { id: "one-time", label: "One Time", discountPercent: 0 },
+  { id: "monthly", label: "Monthly", discountPercent: 10 },
+  { id: "bi-weekly", label: "Bi-Weekly", discountPercent: 15 },
+  { id: "weekly", label: "Weekly", discountPercent: 20 },
 ] as const;
 
 function getAddOn(id: (typeof addOns)[number]["id"]) {
@@ -102,22 +234,77 @@ function getAddOn(id: (typeof addOns)[number]["id"]) {
 // Full content for the homepage service cards and each /services/[slug] detail page.
 export const servicesCatalog = [
   {
+    slug: "basic-detail",
+    name: "Basic Detail",
+    shortDescription: getPackage("basic-detail").description,
+    description:
+      "Basic Detail is a thorough inside-and-out clean that keeps your car looking sharp between full details — a hand wash and foam pre-soak, wheel and tire care, and a full interior vacuum and wipe-down. Performed at your home or office.",
+    image: "/gallery/gallery-06-rangerover-interior.jpg",
+    imageAlt: "Range Rover interior, clean and freshly wiped down",
+    frequency: "Every 2–3 weeks",
+    duration: "75–90 minutes",
+    includes: [
+      ...getPackage("basic-detail").checklist.exterior,
+      ...getPackage("basic-detail").checklist.interior,
+    ],
+    pricing: [
+      {
+        label: "Basic Detail",
+        price: getPackage("basic-detail").price,
+        href: "/book?tier=basic-detail",
+      },
+    ],
+    priceNote: undefined as string | undefined,
+    cta: "book" as const,
+  },
+  {
     slug: "full-detail",
     name: "Full Detail",
-    shortDescription:
-      "A complete interior and exterior detail, from hand wash to hand-applied wax.",
+    shortDescription: getPackage("full-detail").description,
     description:
-      "Every full detail starts with a hand wash and foam pre-soak, then moves through wheel and tire care, a deep interior clean, and a hand-applied wax for a lasting shine. Performed at your home or office — final pricing depends on vehicle size and condition.",
+      "Full Detail is our most-booked package — a complete restoration of your car's interior and exterior. It builds on everything in Basic Detail with a hand-applied wax, deeper interior conditioning, door jamb cleaning, and a full under-seat vacuum. Performed at your home or office.",
     image: "/gallery/gallery-03-bmw-x3-exterior.jpg",
     imageAlt: "Freshly detailed BMW X3 exterior, showroom shine",
     frequency: "Every 4–6 weeks",
-    duration: "90–120 minutes",
-    includes: fullDetailIncludes,
-    pricing: baseServices.map((service) => ({
-      label: service.name,
-      price: service.price,
-      href: `/book?tier=${service.id}`,
-    })),
+    duration: "2–2.5 hours",
+    includes: [
+      ...getPackage("basic-detail").checklist.exterior,
+      ...getPackage("basic-detail").checklist.interior,
+      ...getPackage("full-detail").checklist.items,
+    ],
+    pricing: [
+      {
+        label: "Full Detail",
+        price: getPackage("full-detail").price,
+        href: "/book?tier=full-detail",
+      },
+    ],
+    priceNote: undefined as string | undefined,
+    cta: "book" as const,
+  },
+  {
+    slug: "signature-detail",
+    name: "Signature Detail",
+    shortDescription: getPackage("signature-detail").description,
+    description:
+      "Signature Detail is the full treatment — every surface corrected, conditioned, and protected. It builds on everything in Full Detail with an engine bay clean, clay bar and iron decontamination, leather conditioning, headlight restoration, and a paint sealant for longer-lasting protection.",
+    image: "/gallery/gallery-07-corvette-front.jpg",
+    imageAlt: "Corvette front end with a high-gloss, corrected finish",
+    frequency: "Every 2–3 months",
+    duration: "4–5 hours",
+    includes: [
+      ...getPackage("basic-detail").checklist.exterior,
+      ...getPackage("basic-detail").checklist.interior,
+      ...getPackage("full-detail").checklist.items,
+      ...getPackage("signature-detail").checklist.items,
+    ],
+    pricing: [
+      {
+        label: "Signature Detail",
+        price: getPackage("signature-detail").price,
+        href: "/book?tier=signature-detail",
+      },
+    ],
     priceNote: undefined as string | undefined,
     cta: "book" as const,
   },
@@ -284,12 +471,6 @@ if (!paintCorrection || !("priceCents" in paintCorrection)) {
 }
 
 export const paintCorrectionDepositCents = Math.round(paintCorrection.priceCents / 2);
-
-export const timeWindows = [
-  "Morning (7am – 10am)",
-  "Midday (10am – 1pm)",
-  "Afternoon (1pm – 4pm)",
-] as const;
 
 export const testimonials = [
   {

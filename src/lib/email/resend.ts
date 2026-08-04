@@ -23,6 +23,8 @@ export type BookingNotificationInput = {
   address: string;
   vehicle: string;
   serviceTier: string;
+  vehicleType: string;
+  lastDetailedNote?: string;
   addOns: string[];
   preferredDate: string;
   preferredTime: string;
@@ -41,6 +43,10 @@ export async function sendBookingNotification(booking: BookingNotificationInput)
     `Address: ${booking.address}`,
     `Vehicle: ${booking.vehicle}`,
     `Service: ${booking.serviceTier}`,
+    `Vehicle type: ${booking.vehicleType}`,
+    ...(booking.lastDetailedNote
+      ? [`Last detailed: ${booking.lastDetailedNote}`]
+      : []),
     `Add-ons: ${booking.addOns.length > 0 ? booking.addOns.join(", ") : "None"}`,
     `Preferred date: ${booking.preferredDate}`,
     `Preferred time: ${booking.preferredTime}`,
@@ -61,6 +67,7 @@ export type ConsultationNotificationInput = {
   email: string;
   phone: string;
   vehicle: string;
+  interestedIn: string;
   notes?: string;
 };
 
@@ -76,6 +83,7 @@ export async function sendConsultationNotification(
     `Email: ${consultation.email}`,
     `Phone: ${consultation.phone}`,
     `Vehicle: ${consultation.vehicle}`,
+    `Interested in: ${consultation.interestedIn}`,
     `Notes: ${consultation.notes || "—"}`,
   ];
 
@@ -83,7 +91,7 @@ export async function sendConsultationNotification(
     from,
     to: siteConfig.email,
     replyTo: consultation.email,
-    subject: `New ceramic coating consultation — ${consultation.fullName}`,
+    subject: `New paint correction / ceramic coating inquiry — ${consultation.fullName}`,
     text: lines.join("\n"),
   });
 }
