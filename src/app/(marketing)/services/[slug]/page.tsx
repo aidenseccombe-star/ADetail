@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, Clock, Repeat } from "lucide-react";
+import { Check, Clock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { servicesCatalog } from "@/lib/site-config";
@@ -85,10 +85,6 @@ export default async function ServiceDetailPage({
           </h1>
 
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink/60">
-            <span className="flex items-center gap-1.5">
-              <Repeat className="size-4 text-brand" aria-hidden />
-              {service.frequency}
-            </span>
             <span className="flex items-center gap-1.5">
               <Clock className="size-4 text-brand" aria-hidden />
               {service.duration}

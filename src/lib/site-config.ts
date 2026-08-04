@@ -50,7 +50,7 @@ export const packages = [
     checklist: {
       type: "split",
       exterior: [
-        "Hand wash & foam pre-soak",
+        "Full hand wash",
         "Wheel & tire cleaning + dressing",
         "Exterior window cleaning",
       ],
@@ -75,10 +75,11 @@ export const packages = [
       type: "plus",
       plusFrom: "Basic Detail",
       items: [
-        "Hand-applied wax for a deep shine",
-        "Dashboard & console conditioning",
+        "2-step hand wash",
+        "Wax for a deep shine",
+        "Dashboard & console wipe-down",
+        "Interior leather cleaning & conditioning",
         "Door jamb cleaning",
-        "Deep vacuum including under seats",
       ],
     },
     durationMinutes: { "sedan-coupe": 120, "suv-truck": 150 },
@@ -97,8 +98,7 @@ export const packages = [
         "Engine bay cleaning & dressing",
         "Clay bar treatment",
         "Iron decontamination",
-        "Leather conditioning / fabric protectant",
-        "Headlight restoration",
+        "Steam cleaning of all interior surfaces",
         "Paint sealant for longer-lasting protection",
       ],
     },
@@ -238,10 +238,9 @@ export const servicesCatalog = [
     name: "Basic Detail",
     shortDescription: getPackage("basic-detail").description,
     description:
-      "Basic Detail is a thorough inside-and-out clean that keeps your car looking sharp between full details — a hand wash and foam pre-soak, wheel and tire care, and a full interior vacuum and wipe-down. Performed at your home or office.",
+      "Basic Detail is a thorough inside-and-out clean that keeps your car looking sharp between full details — a full hand wash, wheel and tire care, and a full interior vacuum and wipe-down. Performed at your home or office.",
     image: "/gallery/gallery-06-rangerover-interior.jpg",
     imageAlt: "Range Rover interior, clean and freshly wiped down",
-    frequency: "Every 2–3 weeks",
     duration: "75–90 minutes",
     includes: [
       ...getPackage("basic-detail").checklist.exterior,
@@ -262,15 +261,16 @@ export const servicesCatalog = [
     name: "Full Detail",
     shortDescription: getPackage("full-detail").description,
     description:
-      "Full Detail is our most-booked package — a complete restoration of your car's interior and exterior. It builds on everything in Basic Detail with a hand-applied wax, deeper interior conditioning, door jamb cleaning, and a full under-seat vacuum. Performed at your home or office.",
+      "Full Detail is our most-booked package — a complete restoration of your car's interior and exterior. It builds on everything in Basic Detail with a 2-step hand wash, a fresh coat of wax for a deeper shine, leather cleaning and conditioning, and door jamb cleaning. Performed at your home or office.",
     image: "/gallery/gallery-03-bmw-x3-exterior.jpg",
     imageAlt: "Freshly detailed BMW X3 exterior, showroom shine",
-    frequency: "Every 4–6 weeks",
     duration: "2–2.5 hours",
     includes: [
-      ...getPackage("basic-detail").checklist.exterior,
-      ...getPackage("basic-detail").checklist.interior,
-      ...getPackage("full-detail").checklist.items,
+      ...new Set([
+        ...getPackage("basic-detail").checklist.exterior,
+        ...getPackage("basic-detail").checklist.interior,
+        ...getPackage("full-detail").checklist.items,
+      ]),
     ],
     pricing: [
       {
@@ -287,16 +287,17 @@ export const servicesCatalog = [
     name: "Signature Detail",
     shortDescription: getPackage("signature-detail").description,
     description:
-      "Signature Detail is the full treatment — every surface corrected, conditioned, and protected. It builds on everything in Full Detail with an engine bay clean, clay bar and iron decontamination, leather conditioning, headlight restoration, and a paint sealant for longer-lasting protection.",
-    image: "/gallery/gallery-07-corvette-front.jpg",
-    imageAlt: "Corvette front end with a high-gloss, corrected finish",
-    frequency: "Every 2–3 months",
+      "Signature Detail is the full treatment — every surface corrected, conditioned, and protected. It builds on everything in Full Detail with an engine bay clean, clay bar and iron decontamination, a full steam cleaning of every interior surface, and a paint sealant for longer-lasting protection.",
+    image: "/gallery/gallery-01-bmw-x5m-exterior.jpg",
+    imageAlt: "BMW X5 M exterior, fully corrected and finished to a showroom shine",
     duration: "4–5 hours",
     includes: [
-      ...getPackage("basic-detail").checklist.exterior,
-      ...getPackage("basic-detail").checklist.interior,
-      ...getPackage("full-detail").checklist.items,
-      ...getPackage("signature-detail").checklist.items,
+      ...new Set([
+        ...getPackage("basic-detail").checklist.exterior,
+        ...getPackage("basic-detail").checklist.interior,
+        ...getPackage("full-detail").checklist.items,
+        ...getPackage("signature-detail").checklist.items,
+      ]),
     ],
     pricing: [
       {
@@ -316,7 +317,6 @@ export const servicesCatalog = [
       "Machine polishing lifts swirl marks, light scratches, and oxidation out of your clear coat, restoring depth and clarity before your paint is sealed or coated.",
     image: "/gallery/gallery-05-porsche-taycan-exterior.jpg",
     imageAlt: "Porsche Taycan exterior with corrected, glossy paint",
-    frequency: "As needed, or before a ceramic coating",
     duration: "2–4 hours",
     includes: [
       "Multi-stage machine polish",
@@ -328,11 +328,14 @@ export const servicesCatalog = [
       {
         label: "Paint Correction",
         price: getAddOn("paint-correction").price,
-        href: "/book?addon=paint-correction",
+        href: "/consultation",
       },
     ],
-    priceNote: "50% non-refundable deposit due at booking." as string | undefined,
-    cta: "book" as const,
+    priceNote:
+      "Final pricing depends on vehicle size and condition — request a consultation and we'll follow up with a quote. A 50% deposit secures your appointment." as
+        | string
+        | undefined,
+    cta: "consultation" as const,
   },
   {
     slug: ceramicCoating.id,
@@ -341,7 +344,6 @@ export const servicesCatalog = [
     description: `${ceramicCoating.description} ${ceramicCoating.note}`,
     image: "/gallery/gallery-07-corvette-front.jpg",
     imageAlt: "Corvette front end with a high-gloss, ceramic-coated finish",
-    frequency: "Lasts 2–5 years depending on the product",
     duration: "By consultation",
     includes: [
       "Paint decontamination & prep",
@@ -365,9 +367,8 @@ export const servicesCatalog = [
     shortDescription: getAddOn("headlight-restoration").description,
     description:
       "Foggy, yellowed headlights don't just look dated — they cut down how far your headlights actually throw light at night. We wet-sand away the oxidation and seal the lens for lasting clarity.",
-    image: "/gallery/gallery-01-bmw-x5m-exterior.jpg",
-    imageAlt: "BMW X5 M front fascia with clear, restored headlights",
-    frequency: "Every 1–2 years",
+    image: "/gallery/toyota-tundra-trd-pro.jpg",
+    imageAlt: "Toyota Tundra TRD Pro exterior, detailed to a rich, glossy finish",
     duration: "30–45 minutes",
     includes: [
       "Wet-sand oxidation removal",
@@ -393,7 +394,6 @@ export const servicesCatalog = [
       "A clean engine bay makes it easier to spot leaks and wear early, and it's simply satisfying to pop the hood on a car that's cared for from top to bottom. We degrease and dress every surface by hand.",
     image: "/gallery/gallery-04-mercedes-amg-wheel.jpg",
     imageAlt: "Close-up detail work on a Mercedes-AMG",
-    frequency: "Every 3–6 months",
     duration: "20–30 minutes",
     includes: [
       "Safe degreasing of engine components",
@@ -417,9 +417,8 @@ export const servicesCatalog = [
     shortDescription: getAddOn("pet-hair-removal").description,
     description:
       "Embedded pet hair doesn't come out with a standard vacuum. We use rubber-tipped tools and a deep extraction process to lift hair out of carpet and upholstery fibers.",
-    image: "/gallery/gallery-06-rangerover-interior.jpg",
-    imageAlt: "Range Rover interior with clean carpet and upholstery",
-    frequency: "As needed",
+    image: "/gallery/porsche-911-interior.jpg",
+    imageAlt: "Porsche 911 interior with red leather seats, detailed and conditioned",
     duration: "30–45 minutes",
     includes: [
       "Deep extraction from carpet & upholstery",
@@ -445,7 +444,6 @@ export const servicesCatalog = [
       "Smoke, pet, and mildew odors live deep in fabric and vents where a standard clean can't reach. Ozone treatment neutralizes odor at the source instead of masking it.",
     image: "/gallery/gallery-02-porsche-911gts-interior.jpg",
     imageAlt: "Porsche 911 GTS interior, clean and fresh",
-    frequency: "As needed",
     duration: "30–45 minutes",
     includes: [
       "Ozone treatment for smoke, pet & mildew odors",
