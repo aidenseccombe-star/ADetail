@@ -14,7 +14,10 @@ export default function ConsultationConfirmedPage() {
       <p className="mt-2 text-sm text-ink/60">
         Thanks! We&apos;ll review your vehicle details and follow up by phone or email
         with a personalized ceramic coating quote. If it&apos;s urgent, call us at{" "}
-        {siteConfig.phone}.
+        <a href={siteConfig.phoneHref} className="font-medium text-ink underline">
+          {siteConfig.phone}
+        </a>
+        .
       </p>
       <Button variant="outline" size="lg" className="mt-8" render={<Link href="/" />}>
         Back to home

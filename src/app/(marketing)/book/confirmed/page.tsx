@@ -14,7 +14,11 @@ export default function BookConfirmedPage() {
       <p className="mt-2 text-sm text-ink/60">
         Thanks! We&apos;ll review your details and reach out by phone or text at the
         number you provided to confirm your appointment. If it&apos;s urgent, call us
-        at {siteConfig.phone}.
+        at{" "}
+        <a href={siteConfig.phoneHref} className="font-medium text-ink underline">
+          {siteConfig.phone}
+        </a>
+        .
       </p>
       <Button variant="outline" size="lg" className="mt-8" render={<Link href="/" />}>
         Back to home

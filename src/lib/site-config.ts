@@ -5,7 +5,8 @@ export const siteConfig = {
   tagline: "Premium mobile detailing, brought to your driveway.",
   description:
     "A Detail is a boutique mobile car detailing service. We come to you with professional-grade equipment for a showroom finish — no drop-off required.",
-  phone: "(555) 123-4567",
+  phone: "(949) 627-3704",
+  phoneHref: "tel:+19496273704",
   email: "aidenseccombe@amobiledetail.com",
   city: "Costa Mesa",
   state: "CA",

@@ -243,6 +243,11 @@ export default function TermsPage() {
               {siteConfig.email}
             </a>
           </p>
+          <p className="mt-1 text-base text-ink/70">
+            <a href={siteConfig.phoneHref} className="text-brand hover:underline">
+              {siteConfig.phone}
+            </a>
+          </p>
         </section>
       </div>
     </div>

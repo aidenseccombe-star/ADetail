@@ -56,7 +56,7 @@ export function SiteFooter() {
             <ul className="mt-4 space-y-2.5 text-sm text-ink/60">
               <li className="flex items-center gap-2">
                 <Phone className="size-4 text-brand" aria-hidden />
-                <a href={`tel:${siteConfig.phone}`} className="hover:text-ink">
+                <a href={siteConfig.phoneHref} className="hover:text-ink">
                   {siteConfig.phone}
                 </a>
               </li>

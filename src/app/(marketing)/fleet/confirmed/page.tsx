@@ -13,7 +13,11 @@ export default function FleetConfirmedPage() {
       <h1 className="mt-4 text-2xl font-black text-ink">Inquiry received</h1>
       <p className="mt-2 text-sm text-ink/60">
         Thanks for reaching out. We&apos;ll review your fleet details and follow up to
-        discuss a service plan. If it&apos;s urgent, call us at {siteConfig.phone}.
+        discuss a service plan. If it&apos;s urgent, call us at{" "}
+        <a href={siteConfig.phoneHref} className="font-medium text-ink underline">
+          {siteConfig.phone}
+        </a>
+        .
       </p>
       <Button variant="outline" size="lg" className="mt-8" render={<Link href="/" />}>
         Back to home

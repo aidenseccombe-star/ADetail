@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { Menu, Phone } from "lucide-react";
 
 import { Logo } from "@/components/site/logo";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import { signOut } from "@/lib/actions/auth";
 import { isAdmin } from "@/lib/admin";
-import { servicesCatalog } from "@/lib/site-config";
+import { servicesCatalog, siteConfig } from "@/lib/site-config";
 import { createClient } from "@/lib/supabase/server";
 
 const navLinks = [
@@ -89,6 +89,14 @@ export async function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <a
+            href={siteConfig.phoneHref}
+            className="hidden items-center gap-1.5 pr-2 text-sm font-medium text-ink/70 transition-colors hover:text-ink lg:inline-flex"
+          >
+            <Phone className="size-4 text-brand" aria-hidden />
+            {siteConfig.phone}
+          </a>
+
           {user ? (
             <>
               {admin && (
@@ -128,6 +136,15 @@ export async function SiteHeader() {
 
           <Button variant="brand" size="lg" render={<Link href="/book" />}>
             Book Now
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            render={<a href={siteConfig.phoneHref} aria-label={`Call ${siteConfig.phone}`} />}
+          >
+            <Phone />
           </Button>
 
           <Sheet>

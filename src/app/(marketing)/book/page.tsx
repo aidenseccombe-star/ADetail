@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { BookingForm } from "@/components/booking/booking-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { addOns, frequencyOptions, packages } from "@/lib/site-config";
+import { addOns, frequencyOptions, packages, siteConfig } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "Book Mobile Car Detailing in Costa Mesa & Orange County | A Detail",
@@ -39,6 +39,16 @@ export default async function BookPage({
         <p className="mt-3 text-base text-ink/60">
           Tell us about your vehicle and when you&apos;d like us to come by. We&apos;ll
           reach out to confirm the details.
+        </p>
+        <p className="mt-3 text-sm text-ink/60">
+          Prefer to skip the form? Text or call{" "}
+          <a
+            href={siteConfig.phoneHref}
+            className="font-medium text-brand hover:underline"
+          >
+            {siteConfig.phone}
+          </a>
+          .
         </p>
       </div>
 
