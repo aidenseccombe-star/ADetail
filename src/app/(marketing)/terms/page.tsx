@@ -76,7 +76,7 @@ export default function TermsPage() {
           </h2>
           <p className="mt-3 text-base text-ink/70">
             Free cancellation or rescheduling with 24 hours notice. Less than 24
-            hours notice incurs a $50 cancellation fee.
+            hours notice incurs a $65 cancellation fee.
           </p>
           <p className="mt-3 text-base text-ink/70">
             No-show: if we arrive and cannot access the vehicle, or nobody is

@@ -7,7 +7,7 @@ import { siteConfig } from "@/lib/site-config";
 
 const trustPoints = [
   { icon: Star, label: "5-Star Reviews" },
-  { icon: ShieldCheck, label: "Fully Insured" },
+  { icon: ShieldCheck, label: "24-Hour Response" },
   { icon: CalendarCheck, label: "Easy Online Booking" },
   { icon: ThumbsUp, label: "Satisfaction Guaranteed" },
   { icon: Users, label: "Trained Professionals" },
