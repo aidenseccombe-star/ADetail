@@ -55,8 +55,8 @@ export async function sendBookingNotification(booking: BookingNotificationInput)
 
   await client.emails.send({
     from,
-    to: siteConfig.email,
-    replyTo: booking.email,
+    to: siteConfig.notificationsEmail,
+    replyTo: [booking.email, siteConfig.contactEmail],
     subject: `New booking request — ${booking.fullName}`,
     text: lines.join("\n"),
   });
@@ -89,8 +89,8 @@ export async function sendConsultationNotification(
 
   await client.emails.send({
     from,
-    to: siteConfig.email,
-    replyTo: consultation.email,
+    to: siteConfig.notificationsEmail,
+    replyTo: [consultation.email, siteConfig.contactEmail],
     subject: `New paint correction / ceramic coating inquiry — ${consultation.fullName}`,
     text: lines.join("\n"),
   });
@@ -121,8 +121,8 @@ export async function sendFleetInquiryNotification(inquiry: FleetInquiryNotifica
 
   await client.emails.send({
     from,
-    to: siteConfig.email,
-    replyTo: inquiry.email,
+    to: siteConfig.notificationsEmail,
+    replyTo: [inquiry.email, siteConfig.contactEmail],
     subject: `New fleet/commercial inquiry — ${inquiry.companyName}`,
     text: lines.join("\n"),
   });

@@ -86,8 +86,8 @@ export default function PrivacyPage() {
             deletion of their personal information, and may opt out of any sale
             of personal information — though we do not sell personal
             information. Requests go to{" "}
-            <a href={`mailto:${siteConfig.email}`} className="text-brand hover:underline">
-              {siteConfig.email}
+            <a href={`mailto:${siteConfig.contactEmail}`} className="text-brand hover:underline">
+              {siteConfig.contactEmail}
             </a>
             .
           </p>
@@ -121,8 +121,8 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-xl font-bold text-ink">10. Contact</h2>
           <p className="mt-3 text-base text-ink/70">
-            <a href={`mailto:${siteConfig.email}`} className="text-brand hover:underline">
-              {siteConfig.email}
+            <a href={`mailto:${siteConfig.contactEmail}`} className="text-brand hover:underline">
+              {siteConfig.contactEmail}
             </a>
           </p>
         </section>

@@ -62,8 +62,8 @@ export function SiteFooter() {
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="size-4 text-brand" aria-hidden />
-                <a href={`mailto:${siteConfig.email}`} className="hover:text-ink">
-                  {siteConfig.email}
+                <a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-ink">
+                  {siteConfig.contactEmail}
                 </a>
               </li>
             </ul>

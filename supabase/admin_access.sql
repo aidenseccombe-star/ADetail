@@ -3,8 +3,10 @@
 -- the owner (identified by email) view and update every booking/consultation
 -- request instead of just their own.
 --
--- Keep the email below in sync with siteConfig.email in src/lib/site-config.ts
--- if the owner's email ever changes.
+-- Keep the email below in sync with adminEmail in src/lib/site-config.ts
+-- if the owner's email ever changes. (As of admin_email_update.sql, the
+-- email these policies check no longer matches adminEmail — see that
+-- script for the current value.)
 
 -- Find and drop whatever check constraint currently governs booking_requests.status
 -- (rather than assuming its auto-generated name) before widening it.

@@ -239,8 +239,8 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-bold text-ink">13. Contact</h2>
           <p className="mt-3 text-base text-ink/70">
-            <a href={`mailto:${siteConfig.email}`} className="text-brand hover:underline">
-              {siteConfig.email}
+            <a href={`mailto:${siteConfig.contactEmail}`} className="text-brand hover:underline">
+              {siteConfig.contactEmail}
             </a>
           </p>
           <p className="mt-1 text-base text-ink/70">

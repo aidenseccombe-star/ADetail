@@ -1,5 +1,10 @@
 // Central place to edit business info, pricing, and copy shown across the site.
 
+// Gates access to /admin — intentionally kept separate from siteConfig
+// below, since that object is public-facing (rendered in mailto: links,
+// footer, etc.) and this address is not.
+export const adminEmail = "aiden.seccombe@gmail.com";
+
 export const siteConfig = {
   name: "A Detail",
   tagline: "Premium mobile detailing, brought to your driveway.",
@@ -7,7 +12,12 @@ export const siteConfig = {
     "A Detail is a boutique mobile car detailing service. We come to you with professional-grade equipment for a showroom finish — no drop-off required.",
   phone: "(949) 627-3704",
   phoneHref: "tel:+19496273704",
-  email: "aidenseccombe@amobiledetail.com",
+  // Shown in mailto: links across the site (footer, terms, privacy).
+  contactEmail: "aidenseccombe@amobiledetail.com",
+  // Where Resend sends booking/consultation/fleet notifications. Same
+  // inbox as contactEmail today, but kept as its own value since the two
+  // could reasonably diverge later.
+  notificationsEmail: "aidenseccombe@amobiledetail.com",
   city: "Costa Mesa",
   state: "CA",
   serviceArea: "Orange County",
