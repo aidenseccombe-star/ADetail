@@ -12,8 +12,10 @@ import {
   rangeConflicts,
 } from "@/lib/booking-availability";
 import { sendBookingNotification } from "@/lib/email/resend";
+import { createCalendarEvent } from "@/lib/google/calendar";
 import { packages, paintCorrectionDepositCents } from "@/lib/site-config";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { getStripeClient } from "@/lib/stripe/server";
 
 export type BookingFormValues = {
@@ -156,25 +158,29 @@ export async function createBookingRequest(
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { error } = await supabase.from("booking_requests").insert({
-    user_id: user?.id ?? null,
-    full_name: values.fullName,
-    email: values.email,
-    phone: values.phone,
-    address: values.address,
-    vehicle: values.vehicle,
-    service_tier: values.serviceTier,
-    vehicle_type: values.vehicleType,
-    last_detailed_note: values.lastDetailedNote || null,
-    add_ons: values.addOns,
-    preferred_date: values.preferredDate,
-    preferred_time: values.preferredTime,
-    notes: values.notes || null,
-    stripe_payment_intent_id: values.paymentIntentId ?? null,
-    deposit_amount_cents: depositAmountCents,
-    agreed_to_terms: values.agreedToTerms,
-    agreed_to_terms_at: new Date().toISOString(),
-  });
+  const { data: insertedBooking, error } = await supabase
+    .from("booking_requests")
+    .insert({
+      user_id: user?.id ?? null,
+      full_name: values.fullName,
+      email: values.email,
+      phone: values.phone,
+      address: values.address,
+      vehicle: values.vehicle,
+      service_tier: values.serviceTier,
+      vehicle_type: values.vehicleType,
+      last_detailed_note: values.lastDetailedNote || null,
+      add_ons: values.addOns,
+      preferred_date: values.preferredDate,
+      preferred_time: values.preferredTime,
+      notes: values.notes || null,
+      stripe_payment_intent_id: values.paymentIntentId ?? null,
+      deposit_amount_cents: depositAmountCents,
+      agreed_to_terms: values.agreedToTerms,
+      agreed_to_terms_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
 
   if (error) {
     console.error("Failed to insert booking request", error);
@@ -188,6 +194,33 @@ export async function createBookingRequest(
     await sendBookingNotification(values);
   } catch (emailError) {
     console.error("Failed to send booking notification email", emailError);
+  }
+
+  // Never let Google being unreachable (or not yet connected) block a
+  // booking that's already saved — log and move on.
+  try {
+    const eventId = await createCalendarEvent({
+      serviceTier: values.serviceTier,
+      vehicleType: values.vehicleType,
+      customerName: values.fullName,
+      phone: values.phone,
+      address: values.address,
+      date: values.preferredDate,
+      time: values.preferredTime,
+      durationMinutes,
+    });
+
+    const serviceRoleClient = createServiceRoleClient();
+    const { error: eventIdError } = await serviceRoleClient
+      .from("booking_requests")
+      .update({ google_event_id: eventId })
+      .eq("id", insertedBooking.id);
+
+    if (eventIdError) {
+      console.error("Failed to store Google Calendar event id", eventIdError);
+    }
+  } catch (calendarError) {
+    console.error("Failed to create Google Calendar event", calendarError);
   }
 
   redirect("/book/confirmed");

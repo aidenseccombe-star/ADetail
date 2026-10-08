@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { createCalendarEvent } from "@/lib/google/calendar";
+import { businessTimeZone } from "@/lib/site-config";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
 // Always runs at request time — reads the current date/time, hits Supabase,
 // and its output must never be cached.
 export const dynamic = "force-dynamic";
 
-const TIME_ZONE = "America/Los_Angeles";
+const TIME_ZONE = businessTimeZone;
 const WINDOW_DAYS = 90;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -33,6 +35,18 @@ type RecurringSchedule = {
 type Blackout = {
   start_at: string;
   end_at: string;
+};
+
+type InsertedBookingRow = {
+  id: string;
+  full_name: string;
+  phone: string;
+  address: string;
+  service_tier: string;
+  vehicle_type: string | null;
+  preferred_date: string;
+  preferred_time: string;
+  duration_minutes: number;
 };
 
 type GeneratedRow = {
@@ -340,7 +354,10 @@ export async function GET(request: NextRequest) {
           onConflict: "recurrence_id,recurrence_date",
           ignoreDuplicates: true,
         })
-        .select("id");
+        .select(
+          "id, full_name, phone, address, service_tier, vehicle_type, preferred_date, preferred_time, duration_minutes"
+        )
+        .returns<InsertedBookingRow[]>();
 
       if (insertError) {
         console.error("generate-recurring: failed to insert bookings", insertError);
@@ -349,6 +366,37 @@ export async function GET(request: NextRequest) {
 
       created = inserted?.length ?? 0;
       skippedExisting = candidateRows.length - created;
+
+      // One Calendar failure must never stop the rest of this run or fail
+      // the cron — the booking rows are already safely saved either way.
+      for (const row of inserted ?? []) {
+        try {
+          const eventId = await createCalendarEvent({
+            serviceTier: row.service_tier,
+            vehicleType: row.vehicle_type,
+            customerName: row.full_name,
+            phone: row.phone,
+            address: row.address,
+            date: row.preferred_date,
+            time: row.preferred_time,
+            durationMinutes: row.duration_minutes,
+          });
+
+          const { error: eventIdError } = await supabase
+            .from("booking_requests")
+            .update({ google_event_id: eventId })
+            .eq("id", row.id);
+
+          if (eventIdError) {
+            console.error(
+              "generate-recurring: failed to store Google Calendar event id",
+              eventIdError
+            );
+          }
+        } catch (calendarError) {
+          console.error("generate-recurring: failed to create Google Calendar event", calendarError);
+        }
+      }
     }
   }
 

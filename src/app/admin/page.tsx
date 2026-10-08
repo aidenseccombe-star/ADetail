@@ -12,6 +12,7 @@ import { Logo } from "@/components/site/logo";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/actions/auth";
 import { isAdmin } from "@/lib/admin";
+import { isCalendarConnected } from "@/lib/google/calendar";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -19,7 +20,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ calendar?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -32,6 +37,9 @@ export default async function AdminPage() {
   if (!isAdmin(user.email)) {
     redirect("/");
   }
+
+  const { calendar: calendarStatus } = await searchParams;
+  const calendarConnected = await isCalendarConnected();
 
   const [{ data: bookings }, { data: consultations }, { data: fleetInquiries }] =
     await Promise.all([
@@ -73,6 +81,34 @@ export default async function AdminPage() {
 
       <div className="mt-16">
         <h1 className="text-2xl font-black text-ink">Admin</h1>
+
+        <section className="mt-6 rounded-lg border border-ink/10 p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-ink">Google Calendar</p>
+              <p className="mt-1 text-sm text-ink/60">
+                {calendarConnected
+                  ? "Connected — new bookings create events automatically."
+                  : "Not connected — bookings aren't syncing to your calendar yet."}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="lg"
+              render={<a href="/api/admin/google-calendar/connect" />}
+            >
+              {calendarConnected ? "Reconnect" : "Connect"}
+            </Button>
+          </div>
+          {calendarStatus === "connected" && (
+            <p className="mt-2 text-sm text-brand">Connected successfully.</p>
+          )}
+          {calendarStatus === "error" && (
+            <p className="mt-2 text-sm text-destructive">
+              Couldn&apos;t connect — please try again.
+            </p>
+          )}
+        </section>
 
         <section className="mt-10">
           <h2 className="text-lg font-bold text-ink">

@@ -5,6 +5,11 @@
 // footer, etc.) and this address is not.
 export const adminEmail = "aiden.seccombe@gmail.com";
 
+// Used for all calendar-date and scheduling math — booking availability, the
+// recurring-jobs generator, and Google Calendar event timestamps all anchor
+// to this zone regardless of where the server actually runs.
+export const businessTimeZone = "America/Los_Angeles";
+
 export const siteConfig = {
   name: "A Detail",
   tagline: "Premium mobile detailing, brought to your driveway.",
