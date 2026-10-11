@@ -170,6 +170,7 @@ export async function createBookingRequest(
   const { data: insertedBooking, error } = await serviceRoleClient
     .from("booking_requests")
     .insert({
+      source: "web",
       user_id: user?.id ?? null,
       full_name: values.fullName,
       email: values.email,
