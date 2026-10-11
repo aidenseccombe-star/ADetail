@@ -4,7 +4,13 @@ import { useState, useTransition } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { updateBookingStatus, type BookingStatus } from "@/lib/actions/admin";
+import {
+  archiveBooking,
+  deleteBookingPermanently,
+  restoreBooking,
+  updateBookingStatus,
+  type BookingStatus,
+} from "@/lib/actions/admin";
 
 export type AdminBooking = {
   id: string;
@@ -25,6 +31,7 @@ export type AdminBooking = {
   deposit_amount_cents: number | null;
   agreed_to_terms: boolean | null;
   agreed_to_terms_at: string | null;
+  archived_at: string | null;
 };
 
 const statusVariant = {
@@ -34,7 +41,17 @@ const statusVariant = {
   completed: "outline",
 } as const;
 
-export function AdminBookingRow({ booking }: { booking: AdminBooking }) {
+export function AdminBookingRow({
+  booking,
+  typeLabel,
+  stale = false,
+  trashed = false,
+}: {
+  booking: AdminBooking;
+  typeLabel?: string;
+  stale?: boolean;
+  trashed?: boolean;
+}) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -49,11 +66,43 @@ export function AdminBookingRow({ booking }: { booking: AdminBooking }) {
     });
   }
 
+  function runAction(action: () => Promise<void>, failureMessage: string) {
+    setError(null);
+    startTransition(async () => {
+      try {
+        await action();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : failureMessage);
+      }
+    });
+  }
+
+  function handleDeletePermanently() {
+    if (!window.confirm("Permanently delete this booking? This can't be undone.")) return;
+    runAction(() => deleteBookingPermanently(booking.id), "Couldn't delete booking. Please try again.");
+  }
+
   return (
-    <li className="rounded-lg border border-ink/10 p-4">
+    <li
+      className={`rounded-lg border p-4 ${
+        stale ? "border-destructive/30 bg-destructive/5" : "border-ink/10"
+      }`}
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-ink">
+          <div className="flex flex-wrap items-center gap-2">
+            {typeLabel && (
+              <Badge variant="outline" className="shrink-0">
+                {typeLabel}
+              </Badge>
+            )}
+            {stale && (
+              <Badge variant="destructive" className="shrink-0">
+                Overdue
+              </Badge>
+            )}
+          </div>
+          <p className="mt-1 text-sm font-medium text-ink">
             {booking.full_name} — {booking.vehicle}
           </p>
           {booking.service_tier && (
@@ -94,11 +143,11 @@ export function AdminBookingRow({ booking }: { booking: AdminBooking }) {
 
       {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
 
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         {booking.status === "pending" && (
           <>
             <Button
-              size="sm"
+              size="lg"
               variant="brand"
               disabled={isPending}
               onClick={() => setStatus("confirmed")}
@@ -106,7 +155,7 @@ export function AdminBookingRow({ booking }: { booking: AdminBooking }) {
               Confirm
             </Button>
             <Button
-              size="sm"
+              size="lg"
               variant="destructive"
               disabled={isPending}
               onClick={() => setStatus("declined")}
@@ -117,12 +166,45 @@ export function AdminBookingRow({ booking }: { booking: AdminBooking }) {
         )}
         {booking.status === "confirmed" && (
           <Button
-            size="sm"
+            size="lg"
             variant="outline"
             disabled={isPending}
             onClick={() => setStatus("completed")}
           >
             Mark Complete
+          </Button>
+        )}
+        {trashed ? (
+          <>
+            <Button
+              size="lg"
+              variant="outline"
+              disabled={isPending}
+              onClick={() =>
+                runAction(() => restoreBooking(booking.id), "Couldn't restore booking. Please try again.")
+              }
+            >
+              Restore
+            </Button>
+            <Button
+              size="lg"
+              variant="destructive"
+              disabled={isPending}
+              onClick={handleDeletePermanently}
+            >
+              Delete Permanently
+            </Button>
+          </>
+        ) : (
+          <Button
+            size="lg"
+            variant="ghost"
+            disabled={isPending}
+            onClick={() =>
+              runAction(() => archiveBooking(booking.id), "Couldn't archive booking. Please try again.")
+            }
+          >
+            Archive
           </Button>
         )}
       </div>

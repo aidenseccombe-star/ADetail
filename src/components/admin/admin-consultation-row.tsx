@@ -4,7 +4,13 @@ import { useState, useTransition } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { updateConsultationStatus, type ConsultationStatus } from "@/lib/actions/admin";
+import {
+  archiveConsultation,
+  deleteConsultationPermanently,
+  restoreConsultation,
+  updateConsultationStatus,
+  type ConsultationStatus,
+} from "@/lib/actions/admin";
 
 export type AdminConsultation = {
   id: string;
@@ -18,6 +24,7 @@ export type AdminConsultation = {
   notes: string | null;
   agreed_to_terms: boolean | null;
   agreed_to_terms_at: string | null;
+  archived_at: string | null;
 };
 
 const statusVariant = {
@@ -26,7 +33,15 @@ const statusVariant = {
   closed: "outline",
 } as const;
 
-export function AdminConsultationRow({ consultation }: { consultation: AdminConsultation }) {
+export function AdminConsultationRow({
+  consultation,
+  typeLabel,
+  trashed = false,
+}: {
+  consultation: AdminConsultation;
+  typeLabel?: string;
+  trashed?: boolean;
+}) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -41,10 +56,34 @@ export function AdminConsultationRow({ consultation }: { consultation: AdminCons
     });
   }
 
+  function runAction(action: () => Promise<void>, failureMessage: string) {
+    setError(null);
+    startTransition(async () => {
+      try {
+        await action();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : failureMessage);
+      }
+    });
+  }
+
+  function handleDeletePermanently() {
+    if (!window.confirm("Permanently delete this consultation request? This can't be undone.")) return;
+    runAction(
+      () => deleteConsultationPermanently(consultation.id),
+      "Couldn't delete consultation. Please try again."
+    );
+  }
+
   return (
     <li className="rounded-lg border border-ink/10 p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
+          {typeLabel && (
+            <Badge variant="outline" className="mb-1 shrink-0">
+              {typeLabel}
+            </Badge>
+          )}
           <p className="text-sm font-medium text-ink">
             {consultation.full_name} — {consultation.vehicle}
           </p>
@@ -72,10 +111,10 @@ export function AdminConsultationRow({ consultation }: { consultation: AdminCons
 
       {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
 
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         {consultation.status === "pending" && (
           <Button
-            size="sm"
+            size="lg"
             variant="brand"
             disabled={isPending}
             onClick={() => setStatus("contacted")}
@@ -85,12 +124,51 @@ export function AdminConsultationRow({ consultation }: { consultation: AdminCons
         )}
         {consultation.status === "contacted" && (
           <Button
-            size="sm"
+            size="lg"
             variant="outline"
             disabled={isPending}
             onClick={() => setStatus("closed")}
           >
             Close
+          </Button>
+        )}
+        {trashed ? (
+          <>
+            <Button
+              size="lg"
+              variant="outline"
+              disabled={isPending}
+              onClick={() =>
+                runAction(
+                  () => restoreConsultation(consultation.id),
+                  "Couldn't restore consultation. Please try again."
+                )
+              }
+            >
+              Restore
+            </Button>
+            <Button
+              size="lg"
+              variant="destructive"
+              disabled={isPending}
+              onClick={handleDeletePermanently}
+            >
+              Delete Permanently
+            </Button>
+          </>
+        ) : (
+          <Button
+            size="lg"
+            variant="ghost"
+            disabled={isPending}
+            onClick={() =>
+              runAction(
+                () => archiveConsultation(consultation.id),
+                "Couldn't archive consultation. Please try again."
+              )
+            }
+          >
+            Archive
           </Button>
         )}
       </div>
