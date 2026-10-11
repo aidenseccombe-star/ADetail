@@ -158,7 +158,16 @@ export async function createBookingRequest(
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: insertedBooking, error } = await supabase
+  // The anon RLS insert policy on booking_requests only covers the write
+  // itself — Supabase's .insert().select() performs a real SELECT to return
+  // the row, which anonymous visitors have no SELECT policy for (only the
+  // admin and a signed-in user viewing their own rows do). Reading the new
+  // id back is required to attach the Google Calendar event id afterward, so
+  // this uses the service-role client to bypass RLS for the insert itself —
+  // every field below is already validated above, so there's nothing unsafe
+  // being trusted from the client here.
+  const serviceRoleClient = createServiceRoleClient();
+  const { data: insertedBooking, error } = await serviceRoleClient
     .from("booking_requests")
     .insert({
       user_id: user?.id ?? null,
@@ -210,7 +219,6 @@ export async function createBookingRequest(
       durationMinutes,
     });
 
-    const serviceRoleClient = createServiceRoleClient();
     const { error: eventIdError } = await serviceRoleClient
       .from("booking_requests")
       .update({ google_event_id: eventId })
