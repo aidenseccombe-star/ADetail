@@ -12,7 +12,13 @@ import { AdminSection } from "@/components/admin/admin-section";
 import { Logo } from "@/components/site/logo";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/actions/auth";
-import { categorizeBookings, categorizeLeads, getTodayInTimeZone } from "@/lib/admin/dashboard";
+import {
+  byStalestFirst,
+  categorizeBookings,
+  categorizeLeads,
+  formatRelativeTime,
+  getTodayInTimeZone,
+} from "@/lib/admin/dashboard";
 import { isAdmin } from "@/lib/admin";
 import { isCalendarConnected } from "@/lib/google/calendar";
 import { businessTimeZone } from "@/lib/site-config";
@@ -33,7 +39,12 @@ type LeadItem =
   | { kind: "consultation"; data: AdminConsultation }
   | { kind: "fleet"; data: AdminFleetInquiry };
 
-function renderLeadRow(item: LeadItem, todayStr: string, trashed: boolean) {
+function renderLeadRow(
+  item: LeadItem,
+  todayStr: string,
+  trashed: boolean,
+  showLastUpdated: boolean = false
+) {
   if (item.kind === "booking") {
     const stale = !trashed && item.data.status === "pending" && item.data.preferred_date < todayStr;
     return (
@@ -52,12 +63,19 @@ function renderLeadRow(item: LeadItem, todayStr: string, trashed: boolean) {
         key={item.data.id}
         consultation={item.data}
         typeLabel="Consultation"
+        lastUpdated={showLastUpdated ? formatRelativeTime(item.data.updated_at) : undefined}
         trashed={trashed}
       />
     );
   }
   return (
-    <AdminFleetRow key={item.data.id} inquiry={item.data} typeLabel="Fleet" trashed={trashed} />
+    <AdminFleetRow
+      key={item.data.id}
+      inquiry={item.data}
+      typeLabel="Fleet"
+      lastUpdated={showLastUpdated ? formatRelativeTime(item.data.updated_at) : undefined}
+      trashed={trashed}
+    />
   );
 }
 
@@ -94,14 +112,14 @@ export default async function AdminPage({
       supabase
         .from("consultation_requests")
         .select(
-          "id, created_at, status, full_name, email, phone, vehicle, interested_in, notes, agreed_to_terms, agreed_to_terms_at, archived_at"
+          "id, created_at, status, full_name, email, phone, vehicle, interested_in, notes, agreed_to_terms, agreed_to_terms_at, archived_at, updated_at"
         )
         .order("created_at", { ascending: false })
         .returns<AdminConsultation[]>(),
       supabase
         .from("fleet_inquiries")
         .select(
-          "id, created_at, status, company_name, contact_name, email, phone, fleet_info, notes, archived_at"
+          "id, created_at, status, company_name, contact_name, email, phone, fleet_info, notes, archived_at, updated_at"
         )
         .order("created_at", { ascending: false })
         .returns<AdminFleetInquiry[]>(),
@@ -133,7 +151,7 @@ export default async function AdminPage({
   const inProgress: LeadItem[] = [
     ...consultationBuckets.inProgress.map((data) => ({ kind: "consultation" as const, data })),
     ...fleetBuckets.inProgress.map((data) => ({ kind: "fleet" as const, data })),
-  ].sort((a, b) => b.data.created_at.localeCompare(a.data.created_at));
+  ].sort((a, b) => byStalestFirst(a.data, b.data));
 
   const declined: LeadItem[] = [
     ...bookingBuckets.declined.map((data) => ({ kind: "booking" as const, data })),
@@ -225,11 +243,13 @@ export default async function AdminPage({
           )}
         </AdminSection>
 
-        <AdminSection title="In progress" count={inProgress.length}>
+        <AdminSection title="In progress" count={inProgress.length} defaultOpen>
           {inProgress.length === 0 ? (
             <p className="text-sm text-ink/60">Nothing in progress.</p>
           ) : (
-            <ul className="space-y-3">{inProgress.map((item) => renderLeadRow(item, todayStr, false))}</ul>
+            <ul className="space-y-3">
+              {inProgress.map((item) => renderLeadRow(item, todayStr, false, true))}
+            </ul>
           )}
         </AdminSection>
 

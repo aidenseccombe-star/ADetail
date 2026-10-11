@@ -25,6 +25,7 @@ export type AdminConsultation = {
   agreed_to_terms: boolean | null;
   agreed_to_terms_at: string | null;
   archived_at: string | null;
+  updated_at: string;
 };
 
 const statusVariant = {
@@ -36,10 +37,12 @@ const statusVariant = {
 export function AdminConsultationRow({
   consultation,
   typeLabel,
+  lastUpdated,
   trashed = false,
 }: {
   consultation: AdminConsultation;
   typeLabel?: string;
+  lastUpdated?: string;
   trashed?: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -103,6 +106,9 @@ export function AdminConsultationRow({
             {consultation.agreed_to_terms_at &&
               ` (${new Date(consultation.agreed_to_terms_at).toLocaleString()})`}
           </p>
+          {lastUpdated && (
+            <p className="mt-1 text-sm text-ink/60">Last updated: {lastUpdated}</p>
+          )}
         </div>
         <Badge variant={statusVariant[consultation.status]} className="shrink-0 capitalize">
           {consultation.status}

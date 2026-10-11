@@ -59,17 +59,44 @@ export function categorizeBookings<T extends BookingLike>(
   };
 }
 
+type Updatable = { updated_at: string };
+
 export function categorizeLeads<T extends StatusLike>(rows: T[]) {
   const active = rows.filter((r) => !r.archived_at);
 
   return {
     pending: active.filter((r) => r.status === "pending"),
-    inProgress: active.filter((r) => r.status === "contacted").sort(byCreatedAtDesc),
+    inProgress: active.filter((r) => r.status === "contacted"),
     closed: active.filter((r) => r.status === "closed").sort(byCreatedAtDesc),
     archived: rows
       .filter((r) => r.archived_at)
       .sort((a, b) => (b.archived_at as string).localeCompare(a.archived_at as string)),
   };
+}
+
+// Oldest updated_at first — the point of this sort is surfacing the
+// stalest leads (the ones most likely to have been forgotten about) at the
+// top of the section, not the most recently touched ones.
+export function byStalestFirst<T extends Updatable>(a: T, b: T) {
+  return a.updated_at.localeCompare(b.updated_at);
+}
+
+export function formatRelativeTime(iso: string, now: Date = new Date()): string {
+  const diffMinutes = Math.floor((now.getTime() - new Date(iso).getTime()) / 60_000);
+  if (diffMinutes < 1) return "just now";
+  if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes === 1 ? "" : "s"} ago`;
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) return `${diffMonths} month${diffMonths === 1 ? "" : "s"} ago`;
+
+  const diffYears = Math.floor(diffMonths / 12);
+  return `${diffYears} year${diffYears === 1 ? "" : "s"} ago`;
 }
 
 // Needs Attention mixes bookings (which have a real requested service date)

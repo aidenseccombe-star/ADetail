@@ -23,6 +23,7 @@ export type AdminFleetInquiry = {
   fleet_info: string;
   notes: string | null;
   archived_at: string | null;
+  updated_at: string;
 };
 
 const statusVariant = {
@@ -34,10 +35,12 @@ const statusVariant = {
 export function AdminFleetRow({
   inquiry,
   typeLabel,
+  lastUpdated,
   trashed = false,
 }: {
   inquiry: AdminFleetInquiry;
   typeLabel?: string;
+  lastUpdated?: string;
   trashed?: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -90,6 +93,7 @@ export function AdminFleetRow({
           </p>
           <p className="mt-1 text-sm text-ink/60">{inquiry.fleet_info}</p>
           {inquiry.notes && <p className="mt-1 text-sm text-ink/60">Notes: {inquiry.notes}</p>}
+          {lastUpdated && <p className="mt-1 text-sm text-ink/60">Last updated: {lastUpdated}</p>}
         </div>
         <Badge variant={statusVariant[inquiry.status]} className="shrink-0 capitalize">
           {inquiry.status}
