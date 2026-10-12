@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy | A Detail",
   description:
     "How A Detail collects, uses, and protects your information when you book mobile detailing services in Costa Mesa and Orange County, CA.",
+  robots: { index: false, follow: true },
 };
 
 const LAST_UPDATED = "August 4, 2026";

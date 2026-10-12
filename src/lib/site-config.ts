@@ -17,6 +17,7 @@ export const siteConfig = {
     "A Detail is a boutique mobile car detailing service. We come to you with professional-grade equipment for a showroom finish — no drop-off required.",
   phone: "(949) 627-3704",
   phoneHref: "tel:+19496273704",
+  ownerName: "Aiden Seccombe",
   // Shown in mailto: links across the site (footer, terms, privacy).
   contactEmail: "aidenseccombe@amobiledetail.com",
   // Where Resend sends booking/consultation/fleet notifications. Same

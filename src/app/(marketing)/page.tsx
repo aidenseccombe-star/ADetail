@@ -6,7 +6,41 @@ import { AddOns } from "@/components/site/add-ons";
 import { PaintCorrectionCeramicCoating } from "@/components/site/paint-correction-ceramic-coating";
 import { Gallery } from "@/components/site/gallery";
 import { Testimonials } from "@/components/site/testimonials";
+import { About } from "@/components/site/about";
 import { CtaBanner } from "@/components/site/cta-banner";
+import { servicesCatalog, siteConfig } from "@/lib/site-config";
+
+// LocalBusiness structured data for the homepage. A Detail has no physical
+// storefront — it's a service-area business — so `address` is deliberately
+// omitted rather than populated with a fake or home street address, per
+// Google's guidance for service-area businesses.
+const localBusinessJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "AutoDetailing",
+  name: siteConfig.name,
+  url: "https://amobiledetail.com",
+  telephone: "+19496273704",
+  priceRange: "$105-$379",
+  founder: {
+    "@type": "Person",
+    name: siteConfig.ownerName,
+  },
+  areaServed: [
+    { "@type": "City", name: "Costa Mesa" },
+    { "@type": "City", name: "Newport Beach" },
+    { "@type": "City", name: "Irvine" },
+    { "@type": "City", name: "Huntington Beach" },
+    { "@type": "City", name: "Fountain Valley" },
+  ],
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Mobile Detailing Services",
+    itemListElement: servicesCatalog.map((service) => ({
+      "@type": "Offer",
+      itemOffered: { "@type": "Service", name: service.name },
+    })),
+  },
+};
 
 export const metadata: Metadata = {
   title: "A Detail | Mobile Car Detailing in Costa Mesa & Orange County",
@@ -25,12 +59,17 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
+      />
       <Hero />
       <Packages />
       <AddOns />
       <PaintCorrectionCeramicCoating />
       <Gallery />
       <Testimonials />
+      <About />
       <CtaBanner />
     </>
   );

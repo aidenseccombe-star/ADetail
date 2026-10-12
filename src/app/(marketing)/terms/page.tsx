@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Terms & Conditions | A Detail",
   description:
     "Terms and conditions for booking mobile detailing services with A Detail in Costa Mesa and Orange County, CA.",
+  robots: { index: false, follow: true },
 };
 
 const LAST_UPDATED = "August 4, 2026";
