@@ -17,7 +17,7 @@ import { servicesCatalog, siteConfig } from "@/lib/site-config";
 // must never appear anywhere public.
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
-  "@type": "AutoDetailing",
+  "@type": ["LocalBusiness", "AutoWash"],
   name: siteConfig.name,
   url: "https://amobiledetail.com",
   telephone: "+19496273704",
