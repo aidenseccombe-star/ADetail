@@ -11,9 +11,10 @@ import { CtaBanner } from "@/components/site/cta-banner";
 import { servicesCatalog, siteConfig } from "@/lib/site-config";
 
 // LocalBusiness structured data for the homepage. A Detail has no physical
-// storefront — it's a service-area business — so `address` is deliberately
-// omitted rather than populated with a fake or home street address, per
-// Google's guidance for service-area businesses.
+// storefront — it's a service-area business run from home — so `address`
+// gives only city/region/postal/country (required by Google's Local
+// Business structured data) and deliberately omits streetAddress, which
+// must never appear anywhere public.
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
   "@type": "AutoDetailing",
@@ -21,6 +22,13 @@ const localBusinessJsonLd = {
   url: "https://amobiledetail.com",
   telephone: "+19496273704",
   priceRange: "$105-$379",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Costa Mesa",
+    addressRegion: "CA",
+    postalCode: "92626",
+    addressCountry: "US",
+  },
   founder: {
     "@type": "Person",
     name: siteConfig.ownerName,
